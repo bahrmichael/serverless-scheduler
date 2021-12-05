@@ -8,11 +8,8 @@ const ddb = new DynamoDB.DocumentClient();
 const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
-    console.log(event);
-    console.log({c: event.requestContext?.authorizer?.claims});
-    console.log({a: event.headers?.Authorization});
 
-    const owner = event.requestContext.authorizer.owner;
+    const owner = event.requestContext?.authorizer?.claims['cognito:username'];
 
     const item = (await ddb.get({
         TableName: OWNERS_TABLE,
