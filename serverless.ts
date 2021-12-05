@@ -157,6 +157,17 @@ const serverlessConfiguration: AWS = {
                     }]
                 }
             },
+            MyApiGatewayAuthorizer: {
+                Type: 'AWS::ApiGateway::Authorizer',
+                Properties: {
+                    AuthorizerResultTtlInSeconds: 10,
+                    IdentitySource: 'method.request.header.Authorization',
+                    Name: 'CognitoAuthorizer',
+                    RestApiId: {Ref: 'ApiGatewayRestApi'},
+                    Type: 'COGNITO_USER_POOLS',
+                    ProviderARNs: [{"Fn::Join": ["", ["arn:aws:cognito-idp:", {Ref: "AWS::Region"}, ":", {Ref: "AWS::AccountId"}, ":userpool/", {Ref: 'UserPool'}]]}]
+                }
+            },
             UserPool: {
                 Type : "AWS::Cognito::UserPool",
                 Properties : {

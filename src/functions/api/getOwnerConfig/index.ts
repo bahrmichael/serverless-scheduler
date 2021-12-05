@@ -5,7 +5,8 @@ export default {
       method: 'GET',
       path: '/owner/config',
       authorizer: {
-        arn: {'Fn::GetAtt': ['UserPool', 'Arn']}
+        type: 'COGNITO_USER_POOLS',
+        authorizerId: { Ref: 'MyApiGatewayAuthorizer' },
       },
       cors: true,
     }
