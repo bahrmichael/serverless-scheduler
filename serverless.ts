@@ -172,7 +172,7 @@ const serverlessConfiguration: AWS = {
                         Required: true,
                     }],
                     LambdaConfig: {
-                        PostConfirmation: {'Fn::GetAtt': ['PostConfirmation', 'Arn']}
+                        PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
                     }
                 }
             },
