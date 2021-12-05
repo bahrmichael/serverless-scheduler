@@ -181,7 +181,7 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     GenerateSecret: true,
                     UserPoolId: {Ref: 'UserPool'},
-                    SupportedIdentityProviders: 'COGNITO',
+                    SupportedIdentityProviders: ['COGNITO'],
                     CallbackURLs: ['https://literate-octo-disco.vercel.app/api/auth/callback/cognito'],
                     AllowedOAuthFlows: ['code'],
                     AllowedOAuthScopes: ['email', 'openid', 'profile']
