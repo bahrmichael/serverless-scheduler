@@ -207,7 +207,8 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     IdentityPoolId: {Ref: 'IdentityPool'},
                     Roles: {
-                        authenticated: {'Fn::GetAtt': ['CognitoAuthRole', 'Arn']}
+                        authenticated: {'Fn::GetAtt': ['CognitoAuthRole', 'Arn']},
+                        unauthenticated: {'Fn::GetAtt': ['CognitoUnauthRole', 'Arn']}
                     }
                 }
             },
@@ -238,13 +239,52 @@ const serverlessConfiguration: AWS = {
                             Version: "2012-10-17",
                             Statement: [{
                                 Effect: 'Allow',
+                                Action: ['mobileanalytics:PutEvents', 'cognito-sync:*', 'cognito-identity:*'],
+                                Resource: '*'
+                            },{
+                                Effect: 'Allow',
                                 Action: ['execute-api:Invoke'],
                                 Resource: '*'
                             }]
                         }
                     }]
                 }
+            },
+            CognitoUnauthRole: {
+                Type: "AWS::IAM::Role",
+                Properties: {
+                    AssumeRolePolicyDocument: {
+                        Version: "2012-10-17",
+                        Statement: [{
+                            Effect: 'Allow',
+                            Principal: {
+                                Federated: 'cognito-identity.amazonaws.com'
+                            },
+                            Action: ['sts:AssumeRoleWithWebIdentity'],
+                            Condition: {
+                                StringEquals: {
+                                    'cognito-identity.amazonaws.com:aud': {Ref: 'IdentityPool'},
+                                },
+                                'ForAnyValue:StringLike': {
+                                    'cognito-identity.amazonaws.com:amr': 'unauthenticated',
+                                }
+                            }
+                        }]
+                    },
+                    Policies: [{
+                        PolicyName: 'CognitoAuthorizerPolicy',
+                        PolicyDocument: {
+                            Version: "2012-10-17",
+                            Statement: [{
+                                Effect: 'Allow',
+                                Action: ['mobileanalytics:PutEvents', 'cognito-sync:*', 'cognito-identity:*'],
+                                Resource: '*'
+                            }]
+                        }
+                    }]
+                }
             }
+
         }
     }
 }
