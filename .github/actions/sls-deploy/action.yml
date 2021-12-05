@@ -24,4 +24,4 @@ runs:
         export AWS_SESSION_TOKEN=`echo $CREDS | jq -r '.Credentials.SessionToken'`
         export STAGE=${{inputs.stage}}
         export SLS_DEBUG="*"
-        npm run deploy
+        npm run deploy --conceal
