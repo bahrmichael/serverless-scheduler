@@ -5,7 +5,7 @@ import {
     pullForOwner,
     ingestMessage,
     releaseMessage,
-    authorizerOwnerKey, getOwnerConfig,
+    authorizerOwnerKey, getOwnerConfig, postConfirmation,
 } from './src/functions';
 
 const serverlessConfiguration: AWS = {
@@ -35,7 +35,7 @@ const serverlessConfiguration: AWS = {
             project: 'serverless-scheduler-core',
         }
     },
-    functions: {schedulePull, pullForOwner, ingestMessage, releaseMessage, authorizerOwnerKey, getOwnerConfig},
+    functions: {schedulePull, pullForOwner, ingestMessage, releaseMessage, authorizerOwnerKey, getOwnerConfig, postConfirmation},
     resources: {
         Resources: {
             ReleaseQueue: {
@@ -170,7 +170,10 @@ const serverlessConfiguration: AWS = {
                         AttributeDataType: 'String',
                         Mutable: false,
                         Required: true,
-                    }]
+                    }],
+                    LambdaConfig: {
+                        PostConfirmation: {'Fn::GetAtt': ['postConfirmation', 'Arn']}
+                    }
                 }
             },
             UserPoolClient: {
