@@ -1,4 +1,4 @@
-name: contracts-appraisal-v2
+name: serverless-scheduler
 
 on:
   push:
