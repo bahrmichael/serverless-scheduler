@@ -22,6 +22,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     metrics.setNamespace("DEV/ServerlessScheduler/GetOwnerConfig");
     metrics.setProperty("Owner", owner);
 
+    console.log('result', item);
+
     return {
         statusCode: 200,
         body: JSON.stringify(item),
