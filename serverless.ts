@@ -201,6 +201,49 @@ const serverlessConfiguration: AWS = {
                         ServerSideTokenCheck: true,
                     }]
                 }
+            },
+            IdentityPoolRoles: {
+                Type: "AWS::Cognito::IdentityPoolRoleAttachment",
+                Properties: {
+                    IdentityPoolId: {Ref: 'IdentityPool'},
+                    Roles: {
+                        authenticated: {'Fn::GetAtt': ['CognitoAuthRole', 'Arn']}
+                    }
+                }
+            },
+            CognitoAuthRole: {
+                Type: "AWS::IAM::Role",
+                Properties: {
+                    AssumeRolePolicyDocument: {
+                        Version: "2012-10-17",
+                        Statement: [{
+                            Effect: 'Allow',
+                            Principal: {
+                                Federated: 'cognito-identity.amazonaws.com'
+                            },
+                            Action: ['sts:AssumeRoleWithWebIdentity'],
+                            Condition: {
+                                StringEquals: {
+                                    'cognito-identity.amazonaws.com:aud': {Ref: 'IdentityPool'},
+                                },
+                                'ForAnyValue:StringLike': {
+                                    'cognito-identity.amazonaws.com:amr': 'authenticated',
+                                }
+                            }
+                        }]
+                    },
+                    Policies: [{
+                        PolicyName: 'CognitoAuthorizerPolicy',
+                        PolicyDocument: {
+                            Version: "2012-10-17",
+                            Statement: [{
+                                Effect: 'Allow',
+                                Action: ['execute-api:Invoke'],
+                                Resource: '*'
+                            }]
+                        }
+                    }]
+                }
             }
         }
     }
