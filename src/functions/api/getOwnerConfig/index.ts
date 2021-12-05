@@ -4,7 +4,9 @@ export default {
     http: {
       method: 'GET',
       path: '/owner/config',
-      authorizer: 'aws_iam',
+      authorizer: {
+        arn: {'Fn::GetAtt': ['UserPool', 'Arn']}
+      },
       cors: true,
     }
   }],
