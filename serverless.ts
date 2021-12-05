@@ -183,6 +183,13 @@ const serverlessConfiguration: AWS = {
                     AllowedOAuthFlows: ['code'],
                     AllowedOAuthScopes: ['email', 'openid', 'profile']
                 }
+            },
+            UserPoolClientDomain: {
+                Type: 'AWS::Cognito::UserPoolDomain',
+                Properties: {
+                    Domain: 'serverless-scheduler-${env:STAGE, "dev"}',
+                    UserPoolId: {Ref: 'UserPool'},
+                }
             }
         }
     }
