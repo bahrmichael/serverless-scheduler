@@ -168,7 +168,8 @@ const serverlessConfiguration: AWS = {
                     }],
                     LambdaConfig: {
                         PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
-                    }
+                    },
+                    UsernameConfiguration: { CaseSensitive: false },
                 }
             },
             UserPoolClient: {
@@ -176,7 +177,6 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     GenerateSecret: true,
                     UserPoolId: {Ref: 'UserPool'},
-                    UsernameConfiguration: { CaseSensitive: false },
                     SupportedIdentityProviders: ['COGNITO'],
                     CallbackURLs: ['https://literate-octo-disco.vercel.app/api/auth/callback/cognito'],
                     AllowedOAuthFlowsUserPoolClient: true,
