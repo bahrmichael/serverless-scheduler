@@ -175,7 +175,7 @@ const serverlessConfiguration: AWS = {
             UserPoolClient: {
                 Type: "AWS::Cognito::UserPoolClient",
                 Properties: {
-                    GenerateSecret: true,
+                    GenerateSecret: false,
                     UserPoolId: {Ref: 'UserPool'},
                     SupportedIdentityProviders: ['COGNITO'],
                     CallbackURLs: ['https://literate-octo-disco.vercel.app/api/auth/callback/cognito'],
