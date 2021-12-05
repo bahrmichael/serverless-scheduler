@@ -10,21 +10,21 @@ const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: PostConfirmationTriggerEvent) => {
 
-    console.log(event);
-
-    const owner = event.userName;
+    const {userName} = event;
+    const {sub} = event.request.userAttributes;
 
     await ddb.put({
         TableName: OWNERS_TABLE,
         Item: {
-            owner,
+            owner: userName,
             sk: 'config',
-            apiKey: uuid()
+            apiKey: uuid(),
+            sub,
         }
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/PostConfirmation");
-    metrics.setProperty("Owner", owner);
+    metrics.setProperty("Owner", userName);
 
     return event;
 });
