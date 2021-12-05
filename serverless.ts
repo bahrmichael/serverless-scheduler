@@ -161,11 +161,6 @@ const serverlessConfiguration: AWS = {
                 Type : "AWS::Cognito::UserPool",
                 Properties : {
                     Schema: [{
-                        Name: 'name',
-                        AttributeDataType: 'String',
-                        Mutable: true,
-                        Required: true,
-                    }, {
                         Name: 'email',
                         AttributeDataType: 'String',
                         Mutable: false,
@@ -181,6 +176,7 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     GenerateSecret: true,
                     UserPoolId: {Ref: 'UserPool'},
+                    UsernameConfiguration: { CaseSensitive: false },
                     SupportedIdentityProviders: ['COGNITO'],
                     CallbackURLs: ['https://literate-octo-disco.vercel.app/api/auth/callback/cognito'],
                     AllowedOAuthFlowsUserPoolClient: true,
