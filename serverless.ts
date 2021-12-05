@@ -190,6 +190,15 @@ const serverlessConfiguration: AWS = {
                     Domain: 'serverless-scheduler-${env:STAGE, "dev"}',
                     UserPoolId: {Ref: 'UserPool'},
                 }
+            },
+            IdentityPool: {
+                Type: "AWS::Cognito::IdentityPool",
+                Properties: {
+                    AllowUnauthenticatedIdentities: false,
+                    CognitoIdentityProviders: [{
+                        ClientId: {Ref: 'UserPoolClient'},
+                    }]
+                }
             }
         }
     }
