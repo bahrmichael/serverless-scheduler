@@ -5,6 +5,7 @@ export default {
       method: 'GET',
       path: '/owner/config',
       authorizer: 'aws_iam',
+      cors: true,
     }
   }],
   environment: {
