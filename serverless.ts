@@ -197,6 +197,8 @@ const serverlessConfiguration: AWS = {
                     AllowUnauthenticatedIdentities: false,
                     CognitoIdentityProviders: [{
                         ClientId: {Ref: 'UserPoolClient'},
+                        ProviderName: {'Fn::GetAtt': ['UserPool', 'ProviderName']},
+                        ServerSideTokenCheck: true,
                     }]
                 }
             }
