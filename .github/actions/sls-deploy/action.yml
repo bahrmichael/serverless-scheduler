@@ -1,0 +1,27 @@
+name: sls-deploy
+description: Deploys a Serverless Framework service
+inputs:
+  service-folder:
+    description: Folder containing serverless.yml to be deployed
+    required: true
+  stage:
+    description: Stage to be deployed to
+    required: true
+  aws-account-id:
+    description: AWS Account Id of target environment
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Deploy: ${{ inputs.service-folder }} [${{ inputs.stage }}]'
+      working-directory: ${{ inputs.service-folder }}
+      shell: bash
+      run: |
+        CREDS=`aws sts assume-role --role-arn arn:aws:iam::${{ inputs.aws-account-id }}:role/DeployerRole --role-session-name=gha_deployer`
+        export AWS_ACCESS_KEY_ID=`echo $CREDS | jq -r '.Credentials.AccessKeyId'`
+        export AWS_SECRET_ACCESS_KEY=`echo $CREDS | jq -r '.Credentials.SecretAccessKey'`
+        export AWS_SESSION_TOKEN=`echo $CREDS | jq -r '.Credentials.SessionToken'`
+        export STAGE=${{inputs.stage}}
+        export SLS_DEBUG="*"
+        npm run deploy
