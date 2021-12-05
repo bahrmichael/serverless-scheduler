@@ -4,7 +4,7 @@ export default {
     http: {
       method: 'GET',
       path: '/owner/config',
-      private: true,
+      authorizer: 'aws_iam',
     }
   }],
   environment: {
