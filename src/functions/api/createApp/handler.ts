@@ -12,8 +12,7 @@ const {OWNERS_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.requestContext?.authorizer?.claims['cognito:username'];
-    console.log({b: event.body, owner});
-    const {name, endpoint} = JSON.parse(event.body);
+    const {name, endpoint, authentication} = JSON.parse(event.body);
 
     const apiKey = uuid();
     const id = uuid();
@@ -24,6 +23,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         id,
         endpoint,
         apiKey,
+        httpAuthorization: authentication,
     };
 
     await ddb.put({
@@ -40,7 +40,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify(app),
+        body: JSON.stringify({apiKey}),
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true,
