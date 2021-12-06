@@ -4,7 +4,11 @@ export default {
     http: {
       method: 'PUT',
       path: '/owner/apiKey',
-      private: true,
+      authorizer: {
+        type: 'COGNITO_USER_POOLS',
+        authorizerId: { Ref: 'MyApiGatewayAuthorizer' },
+      },
+      cors: true,
     }
   }],
   environment: {

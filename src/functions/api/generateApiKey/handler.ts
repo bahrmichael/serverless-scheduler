@@ -9,9 +9,9 @@ const ddb = new DynamoDB.DocumentClient();
 const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
-    console.log({requestContext: event.requestContext});
 
-    const owner = event.headers['x-sub'];
+    const owner = event.requestContext?.authorizer?.claims['cognito:username'];
+    const {appId} = JSON.parse(event.body);
 
     const newApiKey = uuid();
 
@@ -19,7 +19,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         TableName: OWNERS_TABLE,
         Key: {
             owner: owner,
-            sk: 'config',
+            sk: `app#${appId}`,
         },
         UpdateExpression: 'set apiKey = :a',
         ExpressionAttributeValues: {
@@ -29,9 +29,10 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     metrics.setNamespace("DEV/ServerlessScheduler/GenerateApiKey");
     metrics.setProperty("Owner", owner);
+    metrics.setProperty("App", appId);
 
     return {
         statusCode: 200,
-        body: {newApiKey},
+        body: {newApiKey, appId},
     }
 });
