@@ -27,7 +27,10 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     await ddb.put({
         TableName: OWNERS_TABLE,
-        Item: app,
+        Item: {
+            ...app,
+            sk: `app#${id}`
+        },
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/CreateApp");
