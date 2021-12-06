@@ -181,6 +181,9 @@ const serverlessConfiguration: AWS = {
                         PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
                     },
                     UsernameConfiguration: { CaseSensitive: false },
+                    EmailConfiguration: {
+                        EmailSendingAccount: 'COGNITO_DEFAULT'
+                    }
                 }
             },
             UserPoolClient: {
