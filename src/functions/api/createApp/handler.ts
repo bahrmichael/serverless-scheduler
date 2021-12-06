@@ -12,6 +12,7 @@ const {OWNERS_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.requestContext?.authorizer?.claims['cognito:username'];
+    console.log({b: event.body, owner});
     const {name} = JSON.parse(event.body);
 
     const apiKey = uuid();
