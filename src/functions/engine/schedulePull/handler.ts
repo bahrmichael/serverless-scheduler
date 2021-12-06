@@ -30,7 +30,7 @@ async function getApps(): Promise<App[]> {
     TableName: OWNERS_TABLE,
     FilterExpression: 'begins_with(sk, :s)',
     ExpressionAttributeValues: {
-      'sk': 'app#',
+      ':s': 'app#',
     }
   }).promise()).Items as App[];
 }
