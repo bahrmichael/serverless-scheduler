@@ -171,8 +171,6 @@ const serverlessConfiguration: AWS = {
             UserPool: {
                 Type : "AWS::Cognito::UserPool",
                 Properties : {
-                    // The attributes to be auto-verified. (This starts the verification flow automatically. It does not just verify them without user consent.)
-                    AutoVerifiedAttributes: ['email'],
                     Schema: [{
                         Name: 'email',
                         AttributeDataType: 'String',
@@ -183,12 +181,11 @@ const serverlessConfiguration: AWS = {
                         PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
                     },
                     UsernameConfiguration: { CaseSensitive: false },
-                    /*
-                    Even though we have the CF set here, I had to go to the console and allow Cognito to automatically send messages
-                     */
                     EmailConfiguration: {
                         EmailSendingAccount: 'COGNITO_DEFAULT'
                     },
+                    // The attributes to be auto-verified. (This starts the verification flow automatically. It does not just verify them without user consent.)
+                    AutoVerifiedAttributes: ['email'],
                     VerificationMessageTemplate: {
                         DefaultEmailOption: 'CONFIRM_WITH_CODE'
                     }
