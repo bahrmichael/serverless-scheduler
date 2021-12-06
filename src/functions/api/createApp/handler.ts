@@ -13,7 +13,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const owner = event.requestContext?.authorizer?.claims['cognito:username'];
     console.log({b: event.body, owner});
-    const {name} = JSON.parse(event.body);
+    const {name, endpoint} = JSON.parse(event.body);
 
     const apiKey = uuid();
     const id = uuid();
@@ -22,6 +22,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         owner,
         name,
         id,
+        endpoint,
         apiKey,
     };
 
@@ -39,6 +40,10 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: app,
+        body: JSON.stringify(app),
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Credentials': true,
+        },
     }
 });

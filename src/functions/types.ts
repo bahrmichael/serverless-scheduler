@@ -6,6 +6,7 @@ export interface App {
     owner: string;
     name: string;
     id: string;
+    endpoint: string;
     apiKey: string;
     httpAuthorization?: string;
 }
