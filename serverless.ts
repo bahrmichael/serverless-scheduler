@@ -181,13 +181,13 @@ const serverlessConfiguration: AWS = {
                         PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
                     },
                     UsernameConfiguration: { CaseSensitive: false },
-                    EmailConfiguration: {
-                        EmailSendingAccount: 'COGNITO_DEFAULT'
-                    },
                     // The attributes to be auto-verified. (This starts the verification flow automatically. It does not just verify them without user consent.)
                     AutoVerifiedAttributes: ['email'],
                     VerificationMessageTemplate: {
                         DefaultEmailOption: 'CONFIRM_WITH_CODE'
+                    },
+                    EmailConfiguration: {
+                        EmailSendingAccount: 'COGNITO_DEFAULT'
                     }
 
                 }
