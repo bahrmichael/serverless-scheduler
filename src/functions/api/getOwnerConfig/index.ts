@@ -17,7 +17,7 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:GetItem'],
+      Action: ['dynamodb:Query'],
       Resource: {'Fn::GetAtt': ['OwnersTable', 'Arn']}
     },
   ],

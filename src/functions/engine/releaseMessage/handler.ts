@@ -29,7 +29,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
   const releaseDelay = released.getTime() - new Date(message.sendAt).getTime();
   metrics.setNamespace("DEV/ServerlessScheduler/ReleaseMessage");
   metrics.setProperty("Owner", message.owner);
-  metrics.setProperty("MessageId", message.id);
+  metrics.setProperty("MessageId", message.messageId);
   metrics.putMetric("Messages", 1, "Count");
 
   try {
@@ -53,8 +53,8 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     await ddb.update({
       TableName: MESSAGES_TABLE,
       Key: {
-        owner: message.owner,
-        id: message.id,
+        appId: message.appId,
+        messageId: message.messageId,
       },
       UpdateExpression: 'set #status = :s, releasedAt = :r, timeToLive = :t',
       ExpressionAttributeNames: {
@@ -75,12 +75,12 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     const m: Message = (await ddb.get({
       TableName: MESSAGES_TABLE,
       Key: {
-        owner: message.owner,
-        id: message.id,
+        appId: message.appId,
+        messageId: message.messageId,
       },
     }).promise()).Item as Message;
     if (!m) {
-      console.log('Message has been removed. Skipping further action.', {owner: message.owner, id: message.id});
+      console.log('Message has been removed. Skipping further action.', {owner: message.owner, app: message.appId, id: message.messageId});
     } else if (m?.errorCount) {
       metrics.putMetric("DelayAfterError", releaseDelay, "Milliseconds");
     } else {
@@ -98,19 +98,19 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     const m: Message = (await ddb.get({
       TableName: MESSAGES_TABLE,
       Key: {
-        owner: message.owner,
-        id: message.id,
+        appId: message.appId,
+        messageId: message.messageId,
       },
     }).promise()).Item as Message;
 
     if (!m) {
-      console.log('Message has been removed. Skipping further action.', {owner: message.owner, id: message.id});
+      console.log('Message has been removed. Skipping further action.', {owner: message.owner, app: message.appId, id: message.messageId});
     } else if (!m.errorCount || m.errorCount <= 3) {
       await ddb.update({
         TableName: MESSAGES_TABLE,
         Key: {
-          owner: message.owner,
-          id: message.id,
+          appId: message.appId,
+          messageId: message.messageId,
         },
         UpdateExpression: 'set errorCount = if_not_exists(errorCount, :c1) + :c2',
         ExpressionAttributeValues: {
@@ -123,7 +123,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     } else {
       m.errorCount += 1;
       m.gsi1pk = `${m.owner}#${MessageStatus.FAILED}`;
-      m.gsi1sk = m.id;
+      m.gsi1sk = m.messageId;
 
       await ddb.put({
         TableName: MESSAGES_TABLE,

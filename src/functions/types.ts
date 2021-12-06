@@ -1,5 +1,11 @@
 export interface Owner {
     owner: string;
+}
+
+export interface App {
+    owner: string;
+    name: string;
+    id: string;
     apiKey: string;
     httpAuthorization?: string;
 }
@@ -18,7 +24,8 @@ export enum TargetType {
 
 export interface Message {
     owner: string;
-    id: string;
+    appId: string;
+    messageId: string;
     sendAt: string;
     status: MessageStatus;
     payload: string;

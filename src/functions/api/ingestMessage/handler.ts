@@ -15,20 +15,13 @@ const {MESSAGES_TABLE, QUEUE_URL} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
     console.log({requestContext: event.requestContext});
 
-    const owner = event.requestContext.authorizer.owner;
+    const {owner, appId} = event.requestContext.authorizer;
 
     // todo: input validation
     let message: Message;
     if (event.isBase64Encoded) {
         const decoded = Buffer.from(event.body, 'base64').toString('utf-8');
         console.log({decoded});
-        // temp fix to get rid of bad messages
-        if (decoded.includes('sendAt=2021')) {
-            return {
-                statusCode: 200,
-                body: ''
-            }
-        }
         message = JSON.parse(decoded) as Message;
     } else {
         console.log({body: event.body});
@@ -38,12 +31,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     if (!message.payload) {
         return {
             statusCode: 400,
-            body: 'missing_paylod',
+            body: 'missing_payload',
         };
     }
 
     message.owner = owner;
-    message.id = `${message.sendAt}#${ulid()}`;
+    message.appId = appId;
+    message.messageId = `${message.sendAt}#${ulid()}`;
 
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);
@@ -71,7 +65,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         // store for later
         message.status = MessageStatus.READY;
         message.gsi1pk = `${owner}#${MessageStatus.READY}`;
-        message.gsi1sk = message.id;
+        message.gsi1sk = message.messageId;
 
         await ddb.put({
             TableName: MESSAGES_TABLE,
@@ -83,7 +77,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     metrics.setNamespace("DEV/ServerlessScheduler/Ingest");
     metrics.setProperty("Owner", owner);
-    metrics.setProperty("MessageId", message.id);
+    metrics.setProperty("App", appId);
+    metrics.setProperty("MessageId", message.messageId);
 
     return {
         statusCode: 200,

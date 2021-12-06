@@ -103,14 +103,14 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     BillingMode: 'PAY_PER_REQUEST',
                     KeySchema: [{
-                        AttributeName: 'owner',
+                        AttributeName: 'appId',
                         KeyType: 'HASH'
                     }, {
-                        AttributeName: 'id',
+                        AttributeName: 'messageId',
                         KeyType: 'RANGE'
                     }],
                     GlobalSecondaryIndexes: [{
-                        IndexName: 'ownerStatusIndex',
+                        IndexName: 'appStatusIndex',
                         KeySchema: [{
                             AttributeName: 'gsi1pk',
                             KeyType: 'HASH'
@@ -123,10 +123,10 @@ const serverlessConfiguration: AWS = {
                         },
                     }],
                     AttributeDefinitions: [{
-                        AttributeName: 'owner',
+                        AttributeName: 'appId',
                         AttributeType: 'S'
                     }, {
-                        AttributeName: 'id',
+                        AttributeName: 'messageId',
                         AttributeType: 'S'
                     }, {
                         AttributeName: 'gsi1pk',

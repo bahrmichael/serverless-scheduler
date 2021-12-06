@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {metricScope} from "aws-embedded-metrics";
-import {Owner} from "../../types";
+import {App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -24,11 +24,11 @@ export const main = metricScope(metrics => async (event: any) => {
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', event.methodArn);
     }
-    const owner: Owner = items[0] as Owner;
-    console.log({owner});
+    const app: App = items[0] as App;
     metrics.putMetric("AccessGranted", 1, "Count");
-    metrics.setProperty("Owner", owner.owner);
-    return generatePolicy('user', 'Allow', event.methodArn, {owner: owner.owner});
+    metrics.setProperty("Owner", app.owner);
+    metrics.setProperty("App", app.id);
+    return generatePolicy('user', 'Allow', event.methodArn, {owner: app.owner, appId: app.id});
 });
 
 // Help function to generate an IAM policy

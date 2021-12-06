@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import * as SQS from 'aws-sdk/clients/sqs';
-import {Message, MessageStatus, Owner} from "../../types";
+import {App, Message, MessageStatus} from "../../types";
 import {calculateDelay} from "../../util";
 import {metricScope} from "aws-embedded-metrics";
 
@@ -10,8 +10,8 @@ const sqs = new SQS();
 
 const {MESSAGES_TABLE, QUEUE_URL} = process.env;
 
-export const main = metricScope(metrics => async (owner: Owner) => {
-  console.log('Pulling messages', {owner: owner.owner});
+export const main = metricScope(metrics => async (app: App) => {
+  console.log('Pulling messages', {owner: app.owner, app: app.id});
   const in5Minutes = new Date();
   in5Minutes.setSeconds(0, 0);
   in5Minutes.setMinutes(in5Minutes.getMinutes() + 5);
@@ -24,26 +24,27 @@ export const main = metricScope(metrics => async (owner: Owner) => {
     We use a sparse index to only query for READY items. The sparse index gets populated when a message is inserted
     into the table, and the attribute is removed in this function after sending the message.
      */
-    IndexName: 'ownerStatusIndex',
+    IndexName: 'appStatusIndex',
     KeyConditionExpression: 'gsi1pk = :pk and gsi1sk < :sk',
     ExpressionAttributeValues: {
-      ':pk': `${owner.owner}#${MessageStatus.READY}`,
+      ':pk': `${app.id}#${MessageStatus.READY}`,
       // ULIDs are 26 characters. Append 0s to the date to start with the first key from the time range.
       ':sk': `${in5Minutes.toISOString()}#00000000000000000000000000`,
     },
     // do not use projection attributes, because we put the whole message into the queue already
   }).promise()).Items as Message[];
 
-  console.log('Retrieved messages', {owner: owner.owner, count: messages.length});
+  console.log('Retrieved messages', {owner: app.owner, app: app.id, count: messages.length});
 
   metrics.setNamespace("DEV/ServerlessScheduler/PullForOwner");
   metrics.putMetric("Messages", messages.length, "Count");
-  metrics.setProperty("Owner", owner.owner);
+  metrics.setProperty("Owner", app.owner);
+  metrics.setProperty("App", app.id);
 
-  if (owner.httpAuthorization) {
+  if (app.httpAuthorization) {
     messages
         .filter((m) => m.targetType === 'HTTPS')
-        .forEach((m) => m.httpAuthorization = owner.httpAuthorization);
+        .forEach((m) => m.httpAuthorization = app.httpAuthorization);
   }
 
   const promises: Promise<void>[] = [];
@@ -51,7 +52,7 @@ export const main = metricScope(metrics => async (owner: Owner) => {
     // todo: chunk into 10 message chunks
     promises.push(processMessage([message]));
   }
-  console.log('Awaiting requests', {owner: owner.owner, count: promises.length});
+  console.log('Awaiting requests', {owner: app.owner, app: app.id, count: promises.length});
   await Promise.all(promises);
 
   /*
@@ -62,9 +63,9 @@ export const main = metricScope(metrics => async (owner: Owner) => {
 
 async function processMessage(messages: Message[]): Promise<void> {
   const entries: {Id: string, MessageBody: string, DelaySeconds: number}[] = messages.map((m) => {
-    console.log('Mapping message', m.id);
+    console.log('Mapping message', m.messageId);
     return {
-      Id: m.id.split("#")[1],
+      Id: m.messageId.split("#")[1],
       MessageBody: JSON.stringify(m),
       DelaySeconds: calculateDelay(m.sendAt),
     }
@@ -78,8 +79,8 @@ async function processMessage(messages: Message[]): Promise<void> {
     await ddb.update({
       TableName: MESSAGES_TABLE,
       Key: {
-        owner: message.owner,
-        id: message.id,
+        appId: message.appId,
+        messageId: message.messageId,
       },
       UpdateExpression: 'set #status = :s remove gsi1pk, gsi1sk',
       ExpressionAttributeNames: {
