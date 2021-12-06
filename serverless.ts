@@ -181,6 +181,9 @@ const serverlessConfiguration: AWS = {
                         PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
                     },
                     UsernameConfiguration: { CaseSensitive: false },
+                    /*
+                    Even though we have the CF set here, I had to go to the console and allow Cognito to automatically send messages
+                     */
                     EmailConfiguration: {
                         EmailSendingAccount: 'COGNITO_DEFAULT'
                     },
