@@ -4,37 +4,36 @@ import {metricScope} from "aws-embedded-metrics";
 
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {App} from "../../types";
+
 const ddb = new DynamoDB.DocumentClient();
 const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.requestContext?.authorizer?.claims['cognito:username'];
+    const {appId} = event.pathParameters;
 
-    const apps: App[] = (await ddb.query({
+    const app: App = (await ddb.get({
         TableName: OWNERS_TABLE,
-        KeyConditionExpression: '#owner = :o and begins_with(sk, :s)',
-        ExpressionAttributeNames: {
-            '#owner': 'owner',
-        },
-        ExpressionAttributeValues: {
-            ':o': owner,
-            ':s': 'app#'
+        Key: {
+            owner,
+            sk: `app#${appId}`
         }
-    }).promise()).Items as App[] ?? [];
+    }).promise()).Item as App;
 
-    const mappedApps = apps.map(({name}) => {
-        return {
-            name,
-        }
-    });
+    const mappedApp = {
+        name: app.name,
+        id: app.id,
+        created: app.created,
+        requiresHttpAuthentication: !!app.httpAuthorization,
+    }
 
-    metrics.setNamespace("DEV/ServerlessScheduler/GetOwnerConfig");
+    metrics.setNamespace("DEV/ServerlessScheduler/GetApp");
     metrics.setProperty("Owner", owner);
 
     return {
         statusCode: 200,
-        body: JSON.stringify({apps: mappedApps}),
+        body: JSON.stringify(mappedApp),
         headers: {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Credentials': true,

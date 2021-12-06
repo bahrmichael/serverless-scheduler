@@ -21,6 +21,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         owner,
         name,
         id,
+        created: new Date().getTime(),
         endpoint,
         apiKey,
         httpAuthorization: authentication,
@@ -32,6 +33,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             ...app,
             sk: `app#${id}`
         },
+        ConditionExpression: 'attribute_not_exists(sk)',
+        // todo: return a proper message
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/CreateApp");

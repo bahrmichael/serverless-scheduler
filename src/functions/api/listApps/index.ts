@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'GET',
-      path: '/owner/config',
+      path: '/apps',
       authorizer: {
         type: 'COGNITO_USER_POOLS',
         authorizerId: { Ref: 'MyApiGatewayAuthorizer' },

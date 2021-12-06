@@ -5,7 +5,7 @@ import {
     pullForOwner,
     ingestMessage,
     releaseMessage,
-    authorizerOwnerKey, getOwnerConfig, postConfirmation, createApp,
+    authorizerOwnerKey, postConfirmation, createApp, getApp, listApps,
 } from './src/functions';
 
 const serverlessConfiguration: AWS = {
@@ -35,7 +35,7 @@ const serverlessConfiguration: AWS = {
             project: 'serverless-scheduler-core',
         }
     },
-    functions: {schedulePull, pullForOwner, ingestMessage, releaseMessage, authorizerOwnerKey, getOwnerConfig, postConfirmation, createApp},
+    functions: {schedulePull, pullForOwner, ingestMessage, releaseMessage, authorizerOwnerKey, getApp, listApps, postConfirmation, createApp},
     resources: {
         Resources: {
             ReleaseQueue: {

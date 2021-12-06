@@ -2,8 +2,8 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [{
     http: {
-      method: 'PUT',
-      path: '/apps',
+      method: 'GET',
+      path: '/apps/{appId}',
       authorizer: {
         type: 'COGNITO_USER_POOLS',
         authorizerId: { Ref: 'MyApiGatewayAuthorizer' },
@@ -17,11 +17,11 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:PutItem'],
+      Action: ['dynamodb:GetItem'],
       Resource: {'Fn::GetAtt': ['OwnersTable', 'Arn']}
     },
   ],
   tags: {
-    resource: 'serverless-scheduler-api-creatApp',
+    resource: 'serverless-scheduler-api-getOwnerConfig',
   },
 }
