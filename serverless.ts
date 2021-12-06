@@ -171,6 +171,8 @@ const serverlessConfiguration: AWS = {
             UserPool: {
                 Type : "AWS::Cognito::UserPool",
                 Properties : {
+                    // The attributes to be auto-verified. (This starts the verification flow automatically. It does not just verify them without user consent.)
+                    AutoVerifiedAttributes: ['email'],
                     Schema: [{
                         Name: 'email',
                         AttributeDataType: 'String',
