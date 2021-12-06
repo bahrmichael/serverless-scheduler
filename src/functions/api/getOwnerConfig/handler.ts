@@ -13,7 +13,10 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const apps: App[] = (await ddb.query({
         TableName: OWNERS_TABLE,
-        KeyConditionExpression: 'owner = :o and begins_with(sk, :s)',
+        KeyConditionExpression: '#owner = :o and begins_with(sk, :s)',
+        ExpressionAttributeNames: {
+            '#owner': 'owner',
+        },
         ExpressionAttributeValues: {
             ':o': owner,
             ':s': 'app#'
