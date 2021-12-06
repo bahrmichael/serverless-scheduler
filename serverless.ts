@@ -183,7 +183,11 @@ const serverlessConfiguration: AWS = {
                     UsernameConfiguration: { CaseSensitive: false },
                     EmailConfiguration: {
                         EmailSendingAccount: 'COGNITO_DEFAULT'
+                    },
+                    VerificationMessageTemplate: {
+                        DefaultEmailOption: 'CONFIRM_WITH_CODE'
                     }
+
                 }
             },
             UserPoolClient: {
