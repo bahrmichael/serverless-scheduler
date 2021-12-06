@@ -8,6 +8,7 @@ const ddb = new DynamoDB.DocumentClient();
 const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: any) => {
+    // todo: instead of just asking for an api key, ask for basic auth with id and secret. Just an api key does it for now though.
     const apiKey = event.authorizationToken;
 
     const items = (await ddb.query({
