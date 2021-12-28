@@ -11,10 +11,9 @@ const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const owner = event.requestContext?.authorizer?.claims['cognito:username'];
+    const owner = event.headers.owner;
     const {name, endpoint, authentication} = JSON.parse(event.body);
 
-    const apiKey = uuid();
     const id = uuid();
 
     const app: App = {
@@ -23,7 +22,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         id,
         created: new Date().getTime(),
         endpoint,
-        apiKey,
         httpAuthorization: authentication,
     };
 
@@ -34,7 +32,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             sk: `app#${id}`
         },
         ConditionExpression: 'attribute_not_exists(sk)',
-        // todo: return a proper message
+        // todo: return a proper message on failure
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/CreateApp");
@@ -43,10 +41,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify({apiKey}),
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-        },
+        body: JSON.stringify({}),
     }
 });
