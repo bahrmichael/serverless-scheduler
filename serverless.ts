@@ -111,7 +111,7 @@ const serverlessConfiguration: AWS = {
                         KeyType: 'RANGE'
                     }],
                     AttributeDefinitions: [{
-                        AttributeName: 'owner',
+                        AttributeName: 'appId',
                         AttributeType: 'S'
                     }, {
                         AttributeName: 'apiKey',
