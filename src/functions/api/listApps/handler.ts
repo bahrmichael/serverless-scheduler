@@ -40,6 +40,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify({apps: mappedApps}),
+        body: JSON.stringify(mappedApps),
     }
 });
