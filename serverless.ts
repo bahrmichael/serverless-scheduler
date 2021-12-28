@@ -71,6 +71,30 @@ const serverlessConfiguration: AWS = {
                     }]
                 }
             },
+            ApplicationsTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'owner',
+                        KeyType: 'HASH'
+                    }, {
+                        AttributeName: 'sk',
+                        KeyType: 'RANGE'
+                    }],
+                    AttributeDefinitions: [{
+                        AttributeName: 'owner',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'sk',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'table',
+                        Value: 'Applications'
+                    }]
+                }
+            },
             ApiKeyTable: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
