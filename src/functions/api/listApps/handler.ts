@@ -36,6 +36,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     metrics.setNamespace("DEV/ServerlessScheduler/ListApps");
     metrics.setProperty("Owner", owner);
+    metrics.putMetric("ApplicationCount", mappedApps.length);
 
     return {
         statusCode: 200,
