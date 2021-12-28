@@ -8,7 +8,7 @@ export default {
     }
   }],
   environment: {
-    API_KEYS_TABLE: {Ref: 'ApiKeyTable'},
+    API_KEY_TABLE: {Ref: 'ApiKeyTable'},
     APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [

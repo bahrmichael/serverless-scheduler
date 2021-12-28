@@ -21,6 +21,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     }).promise()).Item;
     if (!app) {
+        console.log('app_not_found', owner, appId);
         return {
             statusCode: 403,
             body: 'app_not_found',
