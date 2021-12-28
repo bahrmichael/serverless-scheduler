@@ -25,6 +25,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         name: app.name,
         id: app.id,
         created: app.created,
+        endpoint: app.endpoint,
         requiresHttpAuthentication: !!app.httpAuthorization,
     }
 
