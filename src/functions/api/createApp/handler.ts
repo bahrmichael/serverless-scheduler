@@ -16,6 +16,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     // logging the type yielded "INFO typeof body object", but typescript things that the body is a string
     const data = typeof body === 'object' ? body : JSON.parse(body);
+    console.log({data});
     const {name, description, endpoint, httpAuthorization, type} = data;
 
     const id = uuid();
