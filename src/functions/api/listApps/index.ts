@@ -4,11 +4,7 @@ export default {
     http: {
       method: 'GET',
       path: '/apps',
-      authorizer: {
-        type: 'COGNITO_USER_POOLS',
-        authorizerId: { Ref: 'MyApiGatewayAuthorizer' },
-      },
-      cors: true,
+      private: true,
     }
   }],
   environment: {
@@ -22,6 +18,6 @@ export default {
     },
   ],
   tags: {
-    resource: 'serverless-scheduler-api-getOwnerConfig',
+    function: 'listApps',
   },
 }

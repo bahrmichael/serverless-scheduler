@@ -35,7 +35,17 @@ const serverlessConfiguration: AWS = {
             project: 'serverless-scheduler-core',
         }
     },
-    functions: {schedulePull, pullForOwner, ingestMessage, releaseMessage, authorizerOwnerKey, getApp, listApps, postConfirmation, createApp},
+    functions: {
+        schedulePull,
+        pullForOwner,
+        ingestMessage,
+        releaseMessage,
+        authorizerOwnerKey,
+        getApp,
+        listApps,
+        postConfirmation,
+        createApp
+    },
     resources: {
         Resources: {
             ReleaseQueue: {
