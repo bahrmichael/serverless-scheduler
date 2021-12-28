@@ -39,12 +39,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: 'Deploying to stage: dev'
-        uses: './.github/actions/sls-deploy'
-        with:
-          service-folder: ${{ env.SERVICE_FOLDER }}
-          stage: dev
-          aws-account-id: ${{ env.DEV_ACCOUNT_ID }}
+#      - name: 'Deploying to stage: dev'
+#        uses: './.github/actions/sls-deploy'
+#        with:
+#          service-folder: ${{ env.SERVICE_FOLDER }}
+#          stage: dev
+#          aws-account-id: ${{ env.DEV_ACCOUNT_ID }}
 
       # Post-deployment test steps go here
       - name: 'Deploying to stage: prod'
