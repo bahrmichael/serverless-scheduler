@@ -71,6 +71,30 @@ const serverlessConfiguration: AWS = {
                     }]
                 }
             },
+            ApiKeyTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'owner',
+                        KeyType: 'HASH'
+                    }, {
+                        AttributeName: 'apiKey',
+                        KeyType: 'RANGE'
+                    }],
+                    AttributeDefinitions: [{
+                        AttributeName: 'owner',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'apiKey',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'table',
+                        Value: 'ApiKeys'
+                    }]
+                }
+            },
             OwnersTable: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
