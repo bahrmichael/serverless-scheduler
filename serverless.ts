@@ -239,9 +239,6 @@ const serverlessConfiguration: AWS = {
                         Mutable: false,
                         Required: true,
                     }],
-                    LambdaConfig: {
-                        PostConfirmation: {'Fn::GetAtt': ['PostConfirmationLambdaFunction', 'Arn']}
-                    },
                     UsernameConfiguration: { CaseSensitive: false },
                     // The attributes to be auto-verified. (This starts the verification flow automatically. It does not just verify them without user consent.)
                     AutoVerifiedAttributes: ['email'],
