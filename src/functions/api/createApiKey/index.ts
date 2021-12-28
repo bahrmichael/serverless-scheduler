@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'POST',
-      path: '/applications/{appId}/apiKey',
+      path: '/applications/{appId}/api-key',
       private: true,
     }
   }],
