@@ -12,17 +12,19 @@ const {OWNERS_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.headers.owner;
-    const {name, endpoint, authentication} = JSON.parse(event.body);
+    const {name, description, endpoint, httpAuthorization, type} = JSON.parse(event.body);
 
     const id = uuid();
 
     const app: App = {
         owner,
         name,
+        description,
+        type,
         id,
         created: new Date().getTime(),
         endpoint,
-        httpAuthorization: authentication,
+        httpAuthorization,
     };
 
     await ddb.put({
@@ -41,6 +43,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify({}),
+        body: JSON.stringify({id}),
     }
 });
