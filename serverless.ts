@@ -1,11 +1,15 @@
 import type {AWS} from '@serverless/typescript';
 
 import {
-    schedulePull,
-    pullForOwner,
+    authorizerOwnerKey,
+    createApiKey,
+    createApp,
+    getApp,
     ingestMessage,
+    listApps,
+    pullForOwner,
     releaseMessage,
-    authorizerOwnerKey, postConfirmation, createApp, getApp, listApps,
+    schedulePull,
 } from './src/functions';
 
 const serverlessConfiguration: AWS = {
@@ -43,8 +47,8 @@ const serverlessConfiguration: AWS = {
         authorizerOwnerKey,
         getApp,
         listApps,
-        postConfirmation,
-        createApp
+        createApp,
+        createApiKey
     },
     resources: {
         Resources: {
@@ -100,7 +104,7 @@ const serverlessConfiguration: AWS = {
                 Properties: {
                     BillingMode: 'PAY_PER_REQUEST',
                     KeySchema: [{
-                        AttributeName: 'owner',
+                        AttributeName: 'appId',
                         KeyType: 'HASH'
                     }, {
                         AttributeName: 'apiKey',
