@@ -45,6 +45,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: {apiKey},
+        body: JSON.stringify({apiKey}),
     }
 });
