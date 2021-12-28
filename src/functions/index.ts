@@ -5,5 +5,5 @@ export { default as authorizerOwnerKey } from './api/authorizerOwnerKey';
 export { default as ingestMessage } from './api/ingestMessage';
 export { default as listApps } from './api/listApps';
 export { default as getApp } from './api/getApp';
-export { default as postConfirmation } from './userPoolPostConfirmation';
+export { default as createApiKey } from './api/createApiKey';
 export { default as createApp } from './api/createApp';
