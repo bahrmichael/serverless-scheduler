@@ -8,13 +8,13 @@ export default {
     }
   }],
   environment: {
-    OWNERS_TABLE: {Ref: 'OwnersTable'},
+    APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query'],
-      Resource: {'Fn::GetAtt': ['OwnersTable', 'Arn']}
+      Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
   ],
   tags: {

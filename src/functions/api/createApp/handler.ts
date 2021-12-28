@@ -7,7 +7,7 @@ import {App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {OWNERS_TABLE} = process.env;
+const {APPLICATIONS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
@@ -28,10 +28,11 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     };
 
     await ddb.put({
-        TableName: OWNERS_TABLE,
+        TableName: APPLICATIONS_TABLE,
         Item: {
             ...app,
-            sk: `app#${id}`
+            sk: `app#${id}`,
+            owner,
         },
         ConditionExpression: 'attribute_not_exists(sk)',
         // todo: return a proper message on failure

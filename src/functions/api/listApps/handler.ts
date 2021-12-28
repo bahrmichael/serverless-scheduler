@@ -6,14 +6,14 @@ import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
-const {OWNERS_TABLE} = process.env;
+const {APPLICATIONS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.headers.owner;
 
     const apps: App[] = (await ddb.query({
-        TableName: OWNERS_TABLE,
+        TableName: APPLICATIONS_TABLE,
         KeyConditionExpression: '#owner = :o and begins_with(sk, :s)',
         ExpressionAttributeNames: {
             '#owner': 'owner',
