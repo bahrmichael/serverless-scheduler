@@ -2,6 +2,12 @@ export interface Owner {
     owner: string;
 }
 
+export interface HttpAuthorization {
+    headerName: string;
+    // don't show this in the frontend
+    headerValue?: string;
+}
+
 export interface App {
     owner: string;
     name: string;
@@ -12,7 +18,7 @@ export interface App {
     endpoint: string;
     // todo: move this to dedicated table/schema
     apiKey?: string;
-    httpAuthorization?: string;
+    httpAuthorization?: HttpAuthorization;
 }
 
 export enum MessageStatus {
