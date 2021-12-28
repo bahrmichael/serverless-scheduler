@@ -3,12 +3,8 @@ export default {
   events: [{
     http: {
       method: 'PUT',
-      path: '/apps',
-      authorizer: {
-        type: 'COGNITO_USER_POOLS',
-        authorizerId: { Ref: 'MyApiGatewayAuthorizer' },
-      },
-      cors: true,
+      path: '/applications',
+      private: true,
     }
   }],
   environment: {
@@ -22,6 +18,6 @@ export default {
     },
   ],
   tags: {
-    resource: 'serverless-scheduler-api-creatApp',
+    function: 'createApp',
   },
 }
