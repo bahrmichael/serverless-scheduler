@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'GET',
-      path: '/apps',
+      path: '/applications',
       private: true,
     }
   }],
