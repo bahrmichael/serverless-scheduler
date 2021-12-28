@@ -6,24 +6,35 @@ import {v4 as uuid} from 'uuid';
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {OWNERS_TABLE} = process.env;
+const {APPLICATIONS_TABLE, API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const owner = event.requestContext?.authorizer?.claims['cognito:username'];
-    const {appId} = JSON.parse(event.body);
+    const owner = event.headers.owner;
+    const {appId} = event.pathParameters;
 
-    const newApiKey = uuid();
-
-    await ddb.update({
-        TableName: OWNERS_TABLE,
+    const app = (await ddb.get({
+        TableName: APPLICATIONS_TABLE,
         Key: {
-            owner: owner,
+            owner,
             sk: `app#${appId}`,
-        },
-        UpdateExpression: 'set apiKey = :a',
-        ExpressionAttributeValues: {
-            ':a': newApiKey,
+        }
+    }).promise()).Item;
+    if (!app) {
+        return {
+            statusCode: 403,
+            body: 'app_not_found',
+        };
+    }
+
+    const apiKey = uuid();
+
+    await ddb.put({
+        TableName: API_KEY_TABLE,
+        Item: {
+            appId,
+            apiKey,
+            created: new Date().toISOString(),
         }
     }).promise();
 
@@ -33,6 +44,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: {newApiKey, appId},
+        body: {apiKey},
     }
 });
