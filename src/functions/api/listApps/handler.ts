@@ -10,7 +10,7 @@ const {OWNERS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const owner = event.requestContext?.authorizer?.claims['cognito:username'];
+    const owner = event.headers.owner;
 
     const apps: App[] = (await ddb.query({
         TableName: OWNERS_TABLE,
@@ -24,13 +24,14 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     }).promise()).Items as App[] ?? [];
 
-    const mappedApps = apps.map(({name, id, created, httpAuthorization}) => {
+    const mappedApps = apps.map(({name, id, created, endpoint, httpAuthorization}) => {
         return {
             name,
             id,
             created,
+            endpoint,
             requiresHttpAuthentication: !!httpAuthorization,
-        }
+        };
     });
 
     metrics.setNamespace("DEV/ServerlessScheduler/ListApps");
