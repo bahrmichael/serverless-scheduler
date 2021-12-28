@@ -40,9 +40,5 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     return {
         statusCode: 200,
         body: JSON.stringify({apps: mappedApps}),
-        headers: {
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Credentials': true,
-        },
     }
 });
