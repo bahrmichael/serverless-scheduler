@@ -8,7 +8,8 @@ export interface App {
     created: number;
     id: string;
     endpoint: string;
-    apiKey: string;
+    // todo: move this to dedicated table/schema
+    apiKey?: string;
     httpAuthorization?: string;
 }
 
