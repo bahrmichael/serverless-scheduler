@@ -5,6 +5,8 @@ export interface Owner {
 export interface App {
     owner: string;
     name: string;
+    description?: string;
+    type: string;
     created: number;
     id: string;
     endpoint: string;
