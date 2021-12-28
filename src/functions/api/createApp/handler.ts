@@ -12,8 +12,8 @@ const {APPLICATIONS_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const owner = event.headers.owner;
-    console.log('typeof body', typeof event.body);
-    const {name, description, endpoint, httpAuthorization, type} = JSON.parse(event.body);
+    // logging the type yielded "INFO typeof body object", but typescript things that the body is a string
+    const {name, description, endpoint, httpAuthorization, type} = typeof event.body === 'object' ? event.body : JSON.parse(event.body);
 
     const id = uuid();
 
