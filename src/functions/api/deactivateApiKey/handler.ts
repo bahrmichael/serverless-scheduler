@@ -12,6 +12,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const owner = event.headers.owner;
     const {appId, apiKeyId} = event.pathParameters;
 
+    console.log('Loading api keys', {appId, apiKeyId});
+
     const items = (await ddb.query({
         TableName: API_KEY_TABLE,
         IndexName: 'apiKeyIdIndex',
@@ -25,6 +27,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         Limit: 1,
     }).promise()).Items;
 
+    console.log('Number of api keys', {count: items.length, appId, apiKeyId});
     if (items.length === 0) {
         return {
             statusCode: 404,
