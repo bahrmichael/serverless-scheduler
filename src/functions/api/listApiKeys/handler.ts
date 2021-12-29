@@ -25,10 +25,11 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         },
     }).promise()).Items ?? [];
 
-    const mappedApiKeys = items.map((record) => {
+    const mappedApiKeys = items.map((id, created, active) => {
         return {
-            id: record.id,
-            created: record.created,
+            id,
+            created,
+            active,
         }
     });
 
