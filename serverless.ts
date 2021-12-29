@@ -4,8 +4,10 @@ import {
     authorizerOwnerKey,
     createApiKey,
     createApp,
+    deactivateApiKey,
     getApp,
-    ingestMessage, listApiKeys,
+    ingestMessage,
+    listApiKeys,
     listApps,
     pullForOwner,
     releaseMessage,
@@ -52,6 +54,7 @@ const serverlessConfiguration: AWS = {
         updateApp,
         createApiKey,
         listApiKeys,
+        deactivateApiKey,
     },
     resources: {
         Resources: {
@@ -113,11 +116,24 @@ const serverlessConfiguration: AWS = {
                         AttributeName: 'apiKey',
                         KeyType: 'RANGE'
                     }],
+                    GlobalSecondaryIndexes: [{
+                        IndexName: 'apiKeyIdIndex',
+                        KeySchema: [{
+                            AttributeName: 'id',
+                            KeyType: 'HASH'
+                        }],
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        },
+                    }],
                     AttributeDefinitions: [{
                         AttributeName: 'appId',
                         AttributeType: 'S'
                     }, {
                         AttributeName: 'apiKey',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'id',
                         AttributeType: 'S'
                     }],
                     Tags: [{
