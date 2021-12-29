@@ -29,12 +29,15 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     }
 
     const apiKey = uuid();
+    const id = uuid();
 
     await ddb.put({
         TableName: API_KEY_TABLE,
         Item: {
+            id,
             appId,
             apiKey,
+            owner,
             created: new Date().toISOString(),
         }
     }).promise();
