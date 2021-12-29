@@ -12,7 +12,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const owner = event.headers.owner;
     const {appId} = event.pathParameters;
 
-    const items = (await ddb.query({
+    const items: any[] = (await ddb.query({
         TableName: API_KEY_TABLE,
         KeyConditionExpression: 'appId = :a',
         FilterExpression: '#owner = :o',
@@ -25,7 +25,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         },
     }).promise()).Items ?? [];
 
-    const mappedApiKeys = items.map((id, created, active) => {
+    const mappedApiKeys = items.map(({id, created, active}) => {
         return {
             id,
             created,
