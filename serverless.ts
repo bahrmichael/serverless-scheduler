@@ -8,7 +8,7 @@ import {
     getApp,
     ingestMessage,
     listApiKeys,
-    listApps,
+    listApps, listMessages,
     pullForOwner,
     releaseMessage,
     schedulePull,
@@ -55,6 +55,7 @@ const serverlessConfiguration: AWS = {
         createApiKey,
         listApiKeys,
         deactivateApiKey,
+        listMessages,
     },
     resources: {
         Resources: {
