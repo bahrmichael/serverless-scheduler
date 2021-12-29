@@ -30,6 +30,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const mappedApp = {
         name: app.name,
+        description: app.description,
         id: app.id,
         created: app.created,
         endpoint: app.endpoint,
