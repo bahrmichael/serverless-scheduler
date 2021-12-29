@@ -38,6 +38,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             appId,
             apiKey,
             owner,
+            active: true,
             created: new Date().toISOString(),
         }
     }).promise();
