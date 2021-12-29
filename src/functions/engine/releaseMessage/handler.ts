@@ -36,7 +36,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     if (message.targetType === TargetType.HTTPS) {
       const headers: any = {};
       if (message.httpAuthorization) {
-        headers.Authorization = message.httpAuthorization;
+        headers[message.httpAuthorization.headerName] = message.httpAuthorization.headerValue;
       }
       // todo: error handling, retries
       // example: don't return a status code from the contracts appraisal

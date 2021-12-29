@@ -53,5 +53,5 @@ export interface Message {
     errorCount?: number;
 
     // If a message requires authorization, we should pull that from a dedicated secure table, and not have it on every message.
-    httpAuthorization?: string;
+    httpAuthorization?: HttpAuthorization;
 }

@@ -10,6 +10,7 @@ import {
     pullForOwner,
     releaseMessage,
     schedulePull,
+    updateApp,
 } from './src/functions';
 
 const serverlessConfiguration: AWS = {
@@ -48,6 +49,7 @@ const serverlessConfiguration: AWS = {
         getApp,
         listApps,
         createApp,
+        updateApp,
         createApiKey
     },
     resources: {
