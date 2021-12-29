@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'PUT',
-      path: '/applications/{appId}/api-keys/{apiKeyId}',
+      path: '/applications/{appId}/api-keys/{apiKeyId}/deactivate',
       private: true,
     }
   }],
