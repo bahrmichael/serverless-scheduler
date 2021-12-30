@@ -12,13 +12,17 @@ export interface App {
     owner: string;
     name: string;
     description?: string;
-    type: string;
+    type: IntegrationType;
     created: number;
     id: string;
     endpoint: string;
     // todo: move this to dedicated table/schema
     apiKey?: string;
     httpAuthorization?: HttpAuthorization;
+}
+
+export enum IntegrationType {
+    'REST' = 'REST',
 }
 
 export enum MessageStatus {
@@ -48,11 +52,20 @@ export interface Message {
     gsi1pk: string;
     gsi1sk: string;
 
-    targetType: TargetType;
-    targetUrl: string;
+    // We don't keep these fields here, because we load them just before releasing the message.
+    // targetType: TargetType;
+    // targetUrl: string;
+    // httpAuthorization?: HttpAuthorization;
 
     errorCount?: number;
 
-    // If a message requires authorization, we should pull that from a dedicated secure table, and not have it on every message.
-    httpAuthorization?: HttpAuthorization;
+}
+
+export interface ApiKeyRecord {
+    id: string;
+    appId: string;
+    apiKey: string;
+    owner: string;
+    active: boolean;
+    created: string;
 }

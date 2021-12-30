@@ -24,6 +24,6 @@ export default {
     },
   ],
   tags: {
-    resource: 'serverless-scheduler-core-ingest',
+    function: 'ingestMessage',
   },
 }

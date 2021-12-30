@@ -6,14 +6,14 @@ export default {
     }
   ],
   environment: {
-    OWNERS_TABLE: {Ref: 'OwnersTable'},
+    APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
     PULL_FUNCTION_ARN: {'Fn::GetAtt': ['PullForOwnerLambdaFunction', 'Arn']},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:Scan'],
-      Resource: {'Fn::GetAtt': ['OwnersTable', 'Arn']}
+      Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
     {
       Effect: 'Allow',
@@ -23,6 +23,6 @@ export default {
   ],
   timeout: 60,
   tags: {
-    resource: 'serverless-scheduler-core-schedule',
+    function: 'schedulePull',
   }
 }

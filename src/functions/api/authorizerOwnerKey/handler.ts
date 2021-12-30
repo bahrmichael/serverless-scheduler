@@ -1,35 +1,34 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {metricScope} from "aws-embedded-metrics";
-import {App} from "../../types";
+import {ApiKeyRecord} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {OWNERS_TABLE} = process.env;
+const {API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: any) => {
-    // todo: instead of just asking for an api key, ask for basic auth with id and secret. Just an api key does it for now though.
-    const apiKey = event.authorizationToken;
+    // instead of just asking for an api key, ask for basic auth with id and secret
+    const data = event.authorizationToken;
+    const buff = new Buffer(data, 'base64');
+    const decoded = buff.toString('ascii');
+    const parts = decoded.split(':');
+    const appId = parts[0];
+    const apiKey = parts[1];
 
-    const items = (await ddb.query({
-        TableName: OWNERS_TABLE,
-        IndexName: 'apiKeyIndex',
-        KeyConditionExpression: 'apiKey = :a',
-        ExpressionAttributeValues: {
-            ':a': apiKey
-        },
-        Limit: 1,
-    }).promise()).Items;
+    const item: ApiKeyRecord = (await ddb.get({
+        TableName: API_KEY_TABLE,
+        Key: {appId, apiKey},
+    }).promise()).Item as ApiKeyRecord;
 
-    if (items.length !== 1) {
+    if (!item?.active) {
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', event.methodArn);
     }
-    const app: App = items[0] as App;
     metrics.putMetric("AccessGranted", 1, "Count");
-    metrics.setProperty("Owner", app.owner);
-    metrics.setProperty("App", app.id);
-    return generatePolicy('user', 'Allow', event.methodArn, {owner: app.owner, appId: app.id});
+    metrics.setProperty("Owner", item.owner);
+    metrics.setProperty("App", item.appId);
+    return generatePolicy('user', 'Allow', event.methodArn, {owner: item.owner, appId: item.appId});
 });
 
 // Help function to generate an IAM policy

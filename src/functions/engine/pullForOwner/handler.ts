@@ -41,15 +41,9 @@ export const main = metricScope(metrics => async (app: App) => {
   metrics.setProperty("Owner", app.owner);
   metrics.setProperty("App", app.id);
 
-  if (app.httpAuthorization) {
-    messages
-        .filter((m) => m.targetType === 'HTTPS')
-        .forEach((m) => m.httpAuthorization = app.httpAuthorization);
-  }
-
   const promises: Promise<void>[] = [];
   for (const message of messages) {
-    // todo: chunk into 10 message chunks
+    // todo: chunk into 10 message chunks // BUT WHY? Because of SQS batch size?
     promises.push(processMessage([message]));
   }
   console.log('Awaiting requests', {owner: app.owner, app: app.id, count: promises.length});

@@ -7,16 +7,16 @@ import {metricScope} from "aws-embedded-metrics";
 const ddb = new DynamoDB.DocumentClient();
 const lambda = new Lambda();
 
-const {OWNERS_TABLE, PULL_FUNCTION_ARN} = process.env;
+const {APPLICATIONS_TABLE, PULL_FUNCTION_ARN} = process.env;
 
 export const main = metricScope(metrics => async () => {
   const apps: App[] = await getApps();
   metrics.setNamespace("DEV/ServerlessScheduler/SchedulePull");
   metrics.putMetric("Apps", apps.length, "Count");
-  await Promise.all(apps.map(processOwner));
+  await Promise.all(apps.map(processApp));
 });
 
-async function processOwner(app: App): Promise<void> {
+async function processApp(app: App): Promise<void> {
   console.log('Triggering invocation', app);
   await lambda.invoke({
     FunctionName: PULL_FUNCTION_ARN,
@@ -27,7 +27,7 @@ async function processOwner(app: App): Promise<void> {
 
 async function getApps(): Promise<App[]> {
   return (await ddb.scan({
-    TableName: OWNERS_TABLE,
+    TableName: APPLICATIONS_TABLE,
     FilterExpression: 'begins_with(sk, :s)',
     ExpressionAttributeValues: {
       ':s': 'app#',

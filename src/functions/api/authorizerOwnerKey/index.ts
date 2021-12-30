@@ -10,4 +10,7 @@ export default {
       Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['OwnersTable', 'Arn' ] }, 'index', 'apiKeyIndex' ]]}
     },
   ],
+  tags: {
+    function: 'authorizeOwnerKey'
+  }
 }

@@ -1,6 +1,6 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {Message, MessageStatus, TargetType} from "../../types";
+import {App, IntegrationType, Message, MessageStatus} from "../../types";
 import {SQSEvent} from "aws-lambda";
 import axios from 'axios';
 import {metricScope} from "aws-embedded-metrics";
@@ -13,7 +13,55 @@ const https = axios.create({
 
 axiosRetry(https, { retries: 2 });
 
-const {MESSAGES_TABLE} = process.env;
+const {MESSAGES_TABLE, APPLICATIONS_TABLE} = process.env;
+
+const DAY = 24 * 60 * 60;
+
+async function setReleased(message: Message, released: Date) {
+  await ddb.update({
+    TableName: MESSAGES_TABLE,
+    Key: {
+      appId: message.appId,
+      messageId: message.messageId,
+    },
+    UpdateExpression: 'set #status = :s, releasedAt = :r, timeToLive = :t',
+    ExpressionAttributeNames: {
+      '#status': 'status',
+    },
+    ExpressionAttributeValues: {
+      ':s': MessageStatus.SENT,
+      ':r': released.toISOString(),
+      // Let DynamoDB clean up events ASAP
+      ':t': Math.floor(new Date().getTime() / 1_000 + DAY * 30),
+    }
+  }).promise();
+}
+
+async function increaseErrorCount(message: Message) {
+  await ddb.update({
+    TableName: MESSAGES_TABLE,
+    Key: {
+      appId: message.appId,
+      messageId: message.messageId,
+    },
+    UpdateExpression: 'set errorCount = if_not_exists(errorCount, :c1) + :c2',
+    ExpressionAttributeValues: {
+      ':c1': 1,
+      ':c2': 1,
+    }
+  }).promise();
+}
+
+async function setFailed(m: Message) {
+  m.errorCount += 1;
+  m.gsi1pk = `${m.owner}#${MessageStatus.FAILED}`;
+  m.gsi1sk = m.messageId;
+
+  await ddb.put({
+    TableName: MESSAGES_TABLE,
+    Item: m,
+  }).promise();
+}
 
 export const main = metricScope(metrics => async (event: SQSEvent) => {
   const {Records: records} = event;
@@ -23,50 +71,49 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
 
   const message: Message = JSON.parse(records[0].body) as Message;
 
-  console.log('Releasing message', message);
-
-  const released = new Date();
-  const releaseDelay = released.getTime() - new Date(message.sendAt).getTime();
   metrics.setNamespace("DEV/ServerlessScheduler/ReleaseMessage");
   metrics.setProperty("Owner", message.owner);
+  metrics.setProperty("App", message.appId);
   metrics.setProperty("MessageId", message.messageId);
   metrics.putMetric("Messages", 1, "Count");
 
+  const app: App = (await ddb.get({
+    TableName: APPLICATIONS_TABLE,
+    Key: {
+      owner: message.owner,
+      sk: `app#${message.appId}`
+    },
+  }).promise()).Item as App;
+  if (!app) {
+    console.log('Cannot find app', {messageId: message.messageId, appId: message.appId});
+    await setFailed(message);
+    return;
+  }
+
+  console.log('Releasing message', {messageId: message.messageId, appId: message.appId});
+
+  const released = new Date();
+  const releaseDelay = released.getTime() - new Date(message.sendAt).getTime();
+
   try {
-    if (message.targetType === TargetType.HTTPS) {
+    if (app.type === IntegrationType.REST) {
       const headers: any = {};
-      if (message.httpAuthorization) {
-        headers[message.httpAuthorization.headerName] = message.httpAuthorization.headerValue;
+      if (app.httpAuthorization) {
+        headers[app.httpAuthorization.headerName] = app.httpAuthorization.headerValue;
       }
       // todo: error handling, retries
       // example: don't return a status code from the contracts appraisal
-      await https.post(message.targetUrl, message.payload, {headers});
+      await https.post(app.endpoint, message.payload, {headers});
     } else {
-      console.error('Unhandled targetType', message);
-      throw Error('Unhandled targetType.');
+      console.error('Unhandled app type', app.type);
+      throw Error('Unhandled app type.');
     }
     metrics.putMetric("Released", 1, "Count");
-    metrics.setProperty("TargetType", message.targetType);
+    metrics.setProperty("Integration", app.type);
 
     console.log('Message released', message);
 
-    await ddb.update({
-      TableName: MESSAGES_TABLE,
-      Key: {
-        appId: message.appId,
-        messageId: message.messageId,
-      },
-      UpdateExpression: 'set #status = :s, releasedAt = :r, timeToLive = :t',
-      ExpressionAttributeNames: {
-        '#status': 'status',
-      },
-      ExpressionAttributeValues: {
-        ':s': MessageStatus.SENT,
-        ':r': released.toISOString(),
-        // Let DynamoDB clean up events ASAP
-        ':t': Math.floor(new Date().getTime() / 1_000),
-      }
-    }).promise();
+    await setReleased(message, released);
 
     // We have to make this call at the end, because we don't want to delay the release.
     // Furthermore we prefer an accurate status over metrics.
@@ -106,29 +153,11 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     if (!m) {
       console.log('Message has been removed. Skipping further action.', {owner: message.owner, app: message.appId, id: message.messageId});
     } else if (!m.errorCount || m.errorCount <= 3) {
-      await ddb.update({
-        TableName: MESSAGES_TABLE,
-        Key: {
-          appId: message.appId,
-          messageId: message.messageId,
-        },
-        UpdateExpression: 'set errorCount = if_not_exists(errorCount, :c1) + :c2',
-        ExpressionAttributeValues: {
-          ':c1': 1,
-          ':c2': 1,
-        }
-      }).promise();
-
+      await increaseErrorCount(message);
+      // throw an error so that lambda can retry
       throw e;
     } else {
-      m.errorCount += 1;
-      m.gsi1pk = `${m.owner}#${MessageStatus.FAILED}`;
-      m.gsi1sk = m.messageId;
-
-      await ddb.put({
-        TableName: MESSAGES_TABLE,
-        Item: m,
-      }).promise();
+      await setFailed(m);
     }
   }
 });

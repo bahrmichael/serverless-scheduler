@@ -23,6 +23,6 @@ export default {
   ],
   timeout: 60,
   tags: {
-    resource: 'serverless-scheduler-core-pull',
+    function: 'pullForOwner',
   }
 }

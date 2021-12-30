@@ -3,6 +3,7 @@ import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
+import {ApiKeyRecord} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -31,16 +32,18 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const apiKey = uuid();
     const id = uuid();
 
+    const apiKeyRecord: ApiKeyRecord = {
+        id,
+        appId,
+        apiKey,
+        owner,
+        active: true,
+        created: new Date().toISOString(),
+    };
+
     await ddb.put({
         TableName: API_KEY_TABLE,
-        Item: {
-            id,
-            appId,
-            apiKey,
-            owner,
-            active: true,
-            created: new Date().toISOString(),
-        }
+        Item: apiKeyRecord
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/GenerateApiKey");

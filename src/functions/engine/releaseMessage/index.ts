@@ -8,6 +8,7 @@ export default {
   }],
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
+    APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [
     {
@@ -15,9 +16,14 @@ export default {
       Action: ['dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:PutItem'],
       Resource: {'Fn::GetAtt': ['MessagesTable', 'Arn']}
     },
+    {
+      Effect: 'Allow',
+      Action: ['dynamodb:GetItem'],
+      Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
+    },
   ],
   timeout: 30,
   tags: {
-    resource: 'serverless-scheduler-core-release',
+    function: 'releaseMessage',
   }
 }
