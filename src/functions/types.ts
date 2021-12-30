@@ -26,6 +26,7 @@ export enum MessageStatus {
     'QUEUED' = 'QUEUED',
     'SENT' = 'SENT',
     'FAILED' = 'FAILED',
+    'ABORTED' = 'ABORTED',
 }
 
 export enum TargetType {
