@@ -10,7 +10,7 @@ const {API_KEY_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: any) => {
     // instead of just asking for an api key, ask for basic auth with id and secret
     const data = event.authorizationToken;
-    const buff = new Buffer(data, 'base64');
+    const buff = Buffer.from(data, 'base64');
     const decoded = buff.toString('ascii');
     const parts = decoded.split(':');
     const appId = parts[0];
