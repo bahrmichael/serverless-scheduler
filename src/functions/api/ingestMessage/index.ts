@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'POST',
-      path: '/event',
+      path: '/message',
       authorizer: 'authorizerOwnerKey',
     }
   }],
