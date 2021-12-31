@@ -42,8 +42,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);
     if (new Date(message.sendAt) < in10Minutes) {
-        // queue up immediately
-        console.log('Immediately queueing message', message);
+        console.log('queue_short_term', {messageId: message.messageId, appId, owner});
 
         await sqs.sendMessage({
             QueueUrl: QUEUE_URL,
@@ -61,8 +60,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         metrics.putMetric("ShortTerm", 1, "Count");
         metrics.putMetric("Queued", 1, "Count");
     } else {
-        console.log('Storing for later', message);
-        // store for later
+        console.log('store_long_term', {messageId: message.messageId, appId, owner});
+
         message.status = MessageStatus.READY;
         message.gsi1pk = `${owner}#${MessageStatus.READY}`;
         message.gsi1sk = message.messageId;

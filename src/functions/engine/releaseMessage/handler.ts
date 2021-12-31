@@ -90,7 +90,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     return;
   }
 
-  console.log('Releasing message', {messageId: message.messageId, appId: message.appId});
+  console.log('releasing_message', {messageId: message.messageId, appId: message.appId});
 
   const released = new Date();
   const releaseDelay = released.getTime() - new Date(message.sendAt).getTime();
@@ -111,7 +111,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     metrics.putMetric("Released", 1, "Count");
     metrics.setProperty("Integration", app.type);
 
-    console.log('Message released', message);
+    console.log('message_released', {messageId: message.messageId, appId: message.appId, owner: message.owner});
 
     await setReleased(message, released);
 
