@@ -40,6 +40,8 @@ export const main = metricScope(_metrics => async (event: DynamoDBStreamEvent) =
             }
         });
 
+    console.log({ingest, sent});
+
     const promises: Promise<any>[] = [];
 
     for (const [id, count] of ingest) {
