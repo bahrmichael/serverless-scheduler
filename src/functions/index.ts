@@ -13,3 +13,4 @@ export { default as updateApp } from './api/updateApp';
 export { default as listMessages } from './api/listMessages';
 export { default as abortMessage } from './api/abortMessage';
 export { default as redriveMessage } from './api/redriveMessage';
+export { default as meterIngestion } from './metering/ingest';

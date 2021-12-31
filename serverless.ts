@@ -8,7 +8,7 @@ import {
     getApp,
     ingestMessage,
     listApiKeys,
-    listApps, listMessages,
+    listApps, listMessages, meterIngestion,
     pullForOwner,
     releaseMessage,
     schedulePull,
@@ -56,9 +56,34 @@ const serverlessConfiguration: AWS = {
         listApiKeys,
         deactivateApiKey,
         listMessages,
+        meterIngestion,
     },
     resources: {
         Resources: {
+            MeteringTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'owner',
+                        KeyType: 'HASH'
+                    }, {
+                        AttributeName: 'sk',
+                        KeyType: 'RANGE'
+                    }],
+                    AttributeDefinitions: [{
+                        AttributeName: 'owner',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'sk',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'table',
+                        Value: 'Metering'
+                    }]
+                }
+            },
             ReleaseQueue: {
                 Type: 'AWS::SQS::Queue',
                 Properties: {
