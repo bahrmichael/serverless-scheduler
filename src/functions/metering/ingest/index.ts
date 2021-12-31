@@ -3,7 +3,7 @@ export default {
   events: [
     {
       cloudwatchLog: {
-        logGroup: 'serverless-scheduler-${env:STAGE, "dev"}-ingestMessage',
+        logGroup: '/aws/lambda/serverless-scheduler-${env:STAGE, "dev"}-ingestMessage',
         filter: '{$._aws EXISTS}'
       }
     }
