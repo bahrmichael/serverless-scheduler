@@ -2,7 +2,7 @@
   "name": "serverless-scheduler",
   "version": "1.0.0",
   "scripts": {
-    "deploy": "sls deploy",
+    "deploy": "sls deploy"
   },
   "dependencies": {
     "aws-embedded-metrics": "^2.0.4",
