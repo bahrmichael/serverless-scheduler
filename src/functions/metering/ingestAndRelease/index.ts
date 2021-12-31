@@ -2,10 +2,23 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [
     {
-      cloudwatchLog: {
-        logGroup: '/aws/lambda/serverless-scheduler-${env:STAGE, "dev"}-ingestMessage',
-        filter: '{$._aws.Timestamp > 0}'
+      stream: {
+        type: 'dynamodb',
+        arn: {'Fn::GetAtt': ['MessagesTable', 'StreamArn']},
+        filterPatterns: [{
+          eventName: ['INSERT'],
+        }, {
+          eventName: ['UPDATE'],
+          dynamodb: {
+            NewImage: {
+              status: {
+                'S': ['SENT']
+              }
+            }
+          }
+        }]
       }
+
     }
   ],
   environment: {
