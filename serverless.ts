@@ -250,7 +250,10 @@ const serverlessConfiguration: AWS = {
                     Tags: [{
                         Key: 'resource',
                         Value: 'serverless-scheduler-core-messagesTable'
-                    }]
+                    }],
+                    StreamSpecification: {
+                        StreamViewType: 'NEW_IMAGE'
+                    },
                 }
             },
             InsightOwners: {
