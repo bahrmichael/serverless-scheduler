@@ -13,6 +13,7 @@ export const main = metricScope(_metrics => async (event: CloudWatchLogsEvent) =
   const records: Map<string, number> = new Map<string, number>();
 
   for (const {message} of logEvents) {
+    console.log({message, t: typeof message});
     const log = JSON.parse(message);
     console.log({log});
 
