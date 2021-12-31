@@ -5,6 +5,10 @@ export default {
       stream: {
         type: 'dynamodb',
         arn: {'Fn::GetAtt': ['MessagesTable', 'StreamArn']},
+        // Don't retry on failures. We don't want to charge customers for our errors.
+        maximumRetryAttempts: 0,
+        batchSize: 100,
+        batchWindow: 60,
         filterPatterns: [{
           eventName: ['INSERT'],
         }, {
