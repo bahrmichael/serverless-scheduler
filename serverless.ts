@@ -22,9 +22,10 @@ const serverlessConfiguration: AWS = {
         webpack: {
             webpackConfig: './webpack.config.js',
             includeModules: true
-        }
+        },
+        logRetentionInDays: 30
     },
-    plugins: ['serverless-webpack', 'serverless-iam-roles-per-function'],
+    plugins: ['serverless-webpack', 'serverless-iam-roles-per-function', 'serverless-plugin-log-retention'],
     provider: {
         name: 'aws',
         runtime: 'nodejs14.x',
