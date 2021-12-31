@@ -13,7 +13,7 @@ export default {
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query', 'dynamodb:UpdateItem'],
-      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['MessagesTable', 'Arn' ] }, 'index', 'ownerStatusIndex' ]]}
+      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['MessagesTable', 'Arn' ] }, 'index', 'appStatusIndex' ]]}
     },
     {
       Effect: 'Allow',
