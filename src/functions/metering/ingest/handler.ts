@@ -1,6 +1,7 @@
 import 'source-map-support/register';
 import {metricScope} from "aws-embedded-metrics";
 import {CloudWatchLogsEvent, CloudWatchLogsLogEvent} from "aws-lambda";
+import {unzipSync} from 'zlib';
 
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 const ddb = new DynamoDB.DocumentClient();
@@ -9,7 +10,7 @@ const {METERING_TABLE} = process.env;
 export const main = metricScope(_metrics => async (event: CloudWatchLogsEvent) => {
   const payload = Buffer.from(event.awslogs.data, 'base64');
   const day = new Date().toISOString().split('T')[0];
-  const logEvents: CloudWatchLogsLogEvent[] = JSON.parse(payload.toString());
+  const logEvents: CloudWatchLogsLogEvent[] = JSON.parse(unzipSync(payload).toString()).logEvents;
   const records: Map<string, number> = new Map<string, number>();
 
   for (const {message} of logEvents) {
