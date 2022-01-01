@@ -8,6 +8,9 @@ const ddb = new DynamoDB.DocumentClient();
 const {API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: any) => {
+
+    metrics.setNamespace("ServerlessScheduler/Authorizer");
+
     // instead of just asking for an api key, ask for basic auth with id and secret
     const data = event.authorizationToken;
     const buff = Buffer.from(data, 'base64');
@@ -21,14 +24,15 @@ export const main = metricScope(metrics => async (event: any) => {
         Key: {appId, apiKey},
     }).promise()).Item as ApiKeyRecord;
 
+    metrics.setProperty("Owner", apiKeyRecord?.owner);
+    metrics.setProperty("App", apiKeyRecord?.appId);
+
     if (!apiKeyRecord?.active) {
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', event.methodArn);
     }
 
     metrics.putMetric("AccessGranted", 1, "Count");
-    metrics.setProperty("Owner", apiKeyRecord.owner);
-    metrics.setProperty("App", apiKeyRecord.appId);
     return generatePolicy('user', 'Allow', event.methodArn, apiKeyRecord.apigwApiKeyValue, {owner: apiKeyRecord.owner, appId: apiKeyRecord.appId});
 });
 
