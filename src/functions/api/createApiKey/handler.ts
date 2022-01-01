@@ -36,12 +36,19 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const apigwApiKey = await apigw.createApiKey({
         enabled: true,
+        name: id,
     }).promise();
+    try {
+
     await apigw.createUsagePlanKey({
         usagePlanId: app.usagePlanId,
         keyType: "API_KEY",
         keyId: apigwApiKey.id,
     }).promise();
+    } catch (e) {
+        console.log('Failed to associate usage plan', e);
+        throw e;
+    }
 
     const apiKeyRecord: ApiKeyRecord = {
         id,
