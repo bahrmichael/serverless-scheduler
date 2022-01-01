@@ -1,11 +1,13 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
+import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
-import {ApiKeyRecord} from "../../types";
+import {ApiKeyRecord, App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
+const apigw = new ApiGateway();
 
 const {APPLICATIONS_TABLE, API_KEY_TABLE} = process.env;
 
@@ -14,13 +16,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const owner = event.headers.owner;
     const {appId} = event.pathParameters;
 
-    const app = (await ddb.get({
+    const app: App = (await ddb.get({
         TableName: APPLICATIONS_TABLE,
         Key: {
             owner,
             sk: `app#${appId}`,
         }
-    }).promise()).Item;
+    }).promise()).Item as App;
     if (!app) {
         console.log('app_not_found', owner, appId);
         return {
@@ -32,11 +34,22 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const apiKey = uuid();
     const id = uuid();
 
+    const apigwApiKey = await apigw.createApiKey({
+        enabled: true,
+    }).promise();
+    await apigw.createUsagePlanKey({
+        usagePlanId: app.usagePlanId,
+        keyType: "API_KEY",
+        keyId: apigwApiKey.id,
+    }).promise();
+
     const apiKeyRecord: ApiKeyRecord = {
         id,
         appId,
         apiKey,
         owner,
+        apigwApiKeyId: apigwApiKey.id,
+        apigwApiKeyValue: apigwApiKey.value,
         active: true,
         created: new Date().toISOString(),
     };

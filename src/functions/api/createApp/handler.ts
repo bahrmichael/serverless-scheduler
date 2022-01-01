@@ -1,11 +1,13 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
+import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
 import {App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
+const apigw = new ApiGateway();
 
 const {APPLICATIONS_TABLE} = process.env;
 
@@ -22,6 +24,19 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const id = uuid();
 
+    const usagePlanId = (await apigw.createUsagePlan({
+        name: id,
+        description: `Owner:${owner}`,
+        throttle: {
+            rateLimit: 100,
+            burstLimit: 500,
+        },
+        quota: {
+            limit: 10_000,
+            period: "DAY",
+        }
+    }).promise()).id;
+
     const app: App = {
         owner,
         name,
@@ -31,6 +46,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         created: new Date().getTime(),
         endpoint,
         httpAuthorization,
+        usagePlanId,
     };
 
     await ddb.put({
@@ -51,5 +67,5 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     return {
         statusCode: 200,
         body: JSON.stringify({id}),
-    }
+    };
 });

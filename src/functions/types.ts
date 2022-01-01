@@ -16,6 +16,7 @@ export interface App {
     created: number;
     id: string;
     endpoint: string;
+    usagePlanId: string;
     // todo: move this to dedicated table/schema
     apiKey?: string;
     httpAuthorization?: HttpAuthorization;
@@ -68,4 +69,6 @@ export interface ApiKeyRecord {
     owner: string;
     active: boolean;
     created: string;
+    apigwApiKeyId: string;
+    apigwApiKeyValue: string;
 }
