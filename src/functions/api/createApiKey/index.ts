@@ -25,7 +25,7 @@ export default {
     {
       Effect: 'Allow',
       Action: ['apigateway:POST'],
-      Resource: ['arn:aws:apigateway:us-east-1::/apikeys']
+      Resource: ['arn:aws:apigateway:us-east-1::/apikeys', 'arn:aws:apigateway:us-east-1::/usageplans/*/keys']
     }
   ],
   tags: {
