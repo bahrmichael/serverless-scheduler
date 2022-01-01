@@ -63,7 +63,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         console.log('store_long_term', {messageId: message.messageId, appId, owner});
 
         message.status = MessageStatus.READY;
-        message.gsi1pk = `${owner}#${MessageStatus.READY}`;
+        message.gsi1pk = `${appId}#${MessageStatus.READY}`;
         message.gsi1sk = message.messageId;
 
         await ddb.put({
