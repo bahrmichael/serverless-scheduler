@@ -22,6 +22,11 @@ export default {
       Action: ['dynamodb:PutItem'],
       Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
     },
+    {
+      Effect: 'Allow',
+      Action: ['apigateway:POST'],
+      Resource: ['arn:aws:apigateway:us-east-1::/apikeys']
+    }
   ],
   tags: {
     function: 'createApiKey',
