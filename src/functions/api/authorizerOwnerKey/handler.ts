@@ -16,23 +16,24 @@ export const main = metricScope(metrics => async (event: any) => {
     const appId = parts[0];
     const apiKey = parts[1];
 
-    const item: ApiKeyRecord = (await ddb.get({
+    const apiKeyRecord: ApiKeyRecord = (await ddb.get({
         TableName: API_KEY_TABLE,
         Key: {appId, apiKey},
     }).promise()).Item as ApiKeyRecord;
 
-    if (!item?.active) {
+    if (!apiKeyRecord?.active) {
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', event.methodArn);
     }
+
     metrics.putMetric("AccessGranted", 1, "Count");
-    metrics.setProperty("Owner", item.owner);
-    metrics.setProperty("App", item.appId);
-    return generatePolicy('user', 'Allow', event.methodArn, {owner: item.owner, appId: item.appId});
+    metrics.setProperty("Owner", apiKeyRecord.owner);
+    metrics.setProperty("App", apiKeyRecord.appId);
+    return generatePolicy('user', 'Allow', event.methodArn, apiKeyRecord.apigwApiKeyValue, {owner: apiKeyRecord.owner, appId: apiKeyRecord.appId});
 });
 
 // Help function to generate an IAM policy
-function generatePolicy(principalId, effect, resource, context?: any) {
+function generatePolicy(principalId, effect, resource, internalApiKey?: string, context?: any) {
     const authResponse: any = {};
 
     authResponse.principalId = principalId;
@@ -49,5 +50,6 @@ function generatePolicy(principalId, effect, resource, context?: any) {
     }
 
     authResponse.context = context;
+    authResponse.usageIdentifierKey = internalApiKey;
     return authResponse;
 }

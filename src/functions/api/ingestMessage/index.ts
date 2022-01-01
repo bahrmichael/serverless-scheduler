@@ -4,7 +4,10 @@ export default {
     http: {
       method: 'POST',
       path: '/message',
+      // We combine the authorizer and a private API. The authorizer yields the internal api key mapping to the
+      // one we vended out to the customer.
       authorizer: 'authorizerOwnerKey',
+      private: true,
     }
   }],
   environment: {
