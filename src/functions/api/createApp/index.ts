@@ -17,6 +17,11 @@ export default {
       Action: ['dynamodb:PutItem'],
       Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
+    {
+      Effect: 'Allow',
+      Action: ['apigateway:POST'],
+      Resource: ['arn:aws:apigateway:us-east-1::/usageplans']
+    }
   ],
   tags: {
     function: 'createApp',
