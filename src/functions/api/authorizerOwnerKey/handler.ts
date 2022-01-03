@@ -19,10 +19,13 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         throw Error(`Unhandled authorizer event type: ${event.type}`);
     }
 
+    console.log({authorizationToken});
+
     let appId;
     let apiKey;
     let owner;
     if (authorizationToken.startsWith('Basic')) {
+        console.log('Auth:Basic');
         const data = authorizationToken.split(' ')[1];
         const buff = Buffer.from(data, 'base64');
         const decoded = buff.toString('ascii');
@@ -43,6 +46,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             return generatePolicy('user', 'Deny', event.methodArn);
         }
     } else {
+        console.log('Auth:MainToken');
         apiKey = authorizationToken;
         owner = event.headers.owner;
         appId = event.headers.appId;
