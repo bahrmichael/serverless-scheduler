@@ -42,6 +42,9 @@ const serverlessConfiguration: AWS = {
         lambdaHashingVersion: '20201221',
         tags: {
             project: 'serverless-scheduler-core',
+        },
+        logs: {
+            restApi: true,
         }
     },
     functions: {
