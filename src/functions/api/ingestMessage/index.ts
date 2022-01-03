@@ -8,7 +8,7 @@ export default {
       // one we vended out to the customer.
       authorizer: {
         name: 'authorizerOwnerKey',
-        identitySource: ['method.request.header.Authorization', 'method.request.header.owner', 'method.request.header.appId'],
+        identitySource: 'method.request.header.Authorization',
         type: 'request'
       },
       private: true,

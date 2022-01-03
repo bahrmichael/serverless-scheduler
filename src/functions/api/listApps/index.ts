@@ -6,7 +6,7 @@ export default {
       path: '/applications',
       authorizer: {
         name: 'authorizerOwnerKey',
-        identitySource: ['method.request.header.Authorization', 'method.request.header.owner', 'method.request.header.appId'],
+        identitySource: 'method.request.header.Authorization',
         type: 'request'
       },
       private: true,
