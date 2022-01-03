@@ -13,7 +13,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const {owner} = requestContext.authorizer;
     const {appId} = pathParameters;
 
-
     const items: any[] = (await ddb.query({
         TableName: API_KEY_TABLE,
         KeyConditionExpression: 'appId = :a',
@@ -38,6 +37,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     metrics.setNamespace("DEV/ServerlessScheduler/ListApiKeys");
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
+    metrics.setProperty("Count", mappedApiKeys.length);
 
     return {
         statusCode: 200,
