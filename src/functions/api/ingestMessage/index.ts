@@ -6,7 +6,11 @@ export default {
       path: '/message',
       // We combine the authorizer and a private API. The authorizer yields the internal api key mapping to the
       // one we vended out to the customer.
-      authorizer: 'authorizerOwnerKey',
+      authorizer: {
+        name: 'authorizerOwnerKey',
+        identitySource: ['method.request.header.Authorization', 'method.request.header.owner', 'method.request.header.appId'],
+        type: 'request'
+      },
       private: true,
     }
   }],
