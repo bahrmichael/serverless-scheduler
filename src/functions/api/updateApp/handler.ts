@@ -2,6 +2,7 @@ import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
+import {App} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -15,9 +16,9 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     // logging the type yielded "INFO typeof body object", but typescript things that the body is a string
     console.log({body});
-    const data = typeof body === 'object' ? body : JSON.parse(body);
+    const data: App = typeof body === 'object' ? body : JSON.parse(body);
     console.log({data});
-    const {name, description} = data;
+    const {name, description, endpoint, httpAuthorization} = data;
 
     const existingApp = (await ddb.get({
         TableName: APPLICATIONS_TABLE,
@@ -34,20 +35,28 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
+    let updateExpression = 'set #name = :n, description = :d, endpoint = :e, httpAuthorization.headerName = :a';
+    const values: any = {
+        ':n': name,
+        ':d': description,
+        ':e': endpoint,
+        ':a': httpAuthorization.headerName,
+    };
+    if (httpAuthorization.headerValue) {
+        updateExpression += ', httpAuthorization.headerValue = :v';
+        values[':v'] = httpAuthorization.headerValue;
+    }
     await ddb.update({
         TableName: APPLICATIONS_TABLE,
         Key: {
             owner,
             sk: `app#${appId}`,
         },
-        UpdateExpression: 'set #name = :n, description = :d',
+        UpdateExpression: updateExpression,
         ExpressionAttributeNames: {
             '#name': 'name',
         },
-        ExpressionAttributeValues: {
-            ':n': name,
-            ':d': description,
-        }
+        ExpressionAttributeValues: values,
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/UpdateApp");
