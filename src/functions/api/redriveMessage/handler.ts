@@ -10,8 +10,8 @@ const {MESSAGES_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {headers, pathParameters} = event;
-    const {owner} = headers;
+    const {pathParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
     const {appId, messageId} = pathParameters;
 
     await ddb.update({

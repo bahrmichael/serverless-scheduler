@@ -4,6 +4,11 @@ export default {
     http: {
       method: 'POST',
       path: '/applications/{appId}/api-keys',
+      authorizer: {
+        name: 'authorizerOwnerKey',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
       private: true,
     }
   }],

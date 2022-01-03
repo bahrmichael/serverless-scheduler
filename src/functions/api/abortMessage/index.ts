@@ -4,6 +4,11 @@ export default {
     http: {
       method: 'PUT',
       path: '/applications/{appId}/messages/{messageId}/abort',
+      authorizer: {
+        name: 'authorizerOwnerKey',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
       private: true,
     }
   }],

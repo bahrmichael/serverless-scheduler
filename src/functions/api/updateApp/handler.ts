@@ -9,8 +9,8 @@ const {APPLICATIONS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {headers, body, pathParameters} = event;
-    const {owner} = headers;
+    const {body, pathParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
     const {appId} = pathParameters;
 
     // logging the type yielded "INFO typeof body object", but typescript things that the body is a string

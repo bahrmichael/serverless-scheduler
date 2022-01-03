@@ -10,8 +10,8 @@ const {MESSAGES_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {headers, pathParameters, queryStringParameters} = event;
-    const {owner} = headers;
+    const {pathParameters, queryStringParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
     const {appId} = pathParameters;
 
     let ExclusiveStartKey = undefined;

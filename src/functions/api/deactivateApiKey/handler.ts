@@ -9,8 +9,10 @@ const {API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const owner = event.headers.owner;
-    const {appId, apiKeyId} = event.pathParameters;
+    const {pathParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
+    const {appId, apiKeyId} = pathParameters;
+
 
     console.log('Loading api keys', {appId, apiKeyId});
 

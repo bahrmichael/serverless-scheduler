@@ -10,8 +10,10 @@ const {APPLICATIONS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {owner} = event.headers;
-    const {appId} = event.pathParameters;
+    const {pathParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
+    const {appId} = pathParameters;
+
 
     const app: App = (await ddb.get({
         TableName: APPLICATIONS_TABLE,

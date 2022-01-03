@@ -4,6 +4,11 @@ export default {
     http: {
       method: 'GET',
       path: '/applications/{appId}',
+      authorizer: {
+        name: 'authorizerOwnerKey',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
       private: true,
     }
   }],
