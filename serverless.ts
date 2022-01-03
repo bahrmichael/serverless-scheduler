@@ -34,6 +34,7 @@ const serverlessConfiguration: AWS = {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
             apiKeys: ["API_KEY"],
+            apiKeySourceType: 'AUTHORIZER'
         },
         environment: {
             AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1',

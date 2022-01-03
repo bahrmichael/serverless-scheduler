@@ -46,7 +46,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             return generatePolicy('user', 'Deny', event.methodArn);
         }
     } else {
-        console.log('Auth:MainToken');
+        console.log('Auth:Token');
         apiKey = authorizationToken;
         owner = event.headers.owner;
         appId = event.headers.appId;
@@ -54,7 +54,6 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
 
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
-
 
     metrics.putMetric("AccessGranted", 1, "Count");
     return generatePolicy('user', 'Allow', event.methodArn, apiKey, {owner, appId});
