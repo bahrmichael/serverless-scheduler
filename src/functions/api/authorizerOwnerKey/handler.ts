@@ -11,6 +11,7 @@ const {API_KEY_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEvent) => {
 
     metrics.setNamespace("ServerlessScheduler/Authorizer");
+    console.log({authType: event.type});
 
     let authorizationToken;
     if (event.type === 'REQUEST') {
