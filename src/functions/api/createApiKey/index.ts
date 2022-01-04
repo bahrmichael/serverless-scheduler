@@ -5,7 +5,7 @@ export default {
       method: 'POST',
       path: '/applications/{appId}/api-keys',
       authorizer: {
-        name: 'authorizerOwnerKey',
+        name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
         type: 'request'
       },

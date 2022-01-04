@@ -7,7 +7,7 @@ export default {
       // We combine the authorizer and a private API. The authorizer yields the internal api key mapping to the
       // one we vended out to the customer.
       authorizer: {
-        name: 'authorizerOwnerKey',
+        name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
         type: 'request'
       },

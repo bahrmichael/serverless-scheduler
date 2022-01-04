@@ -5,7 +5,7 @@ export default {
       method: 'GET',
       path: '/applications/{appId}/messages',
       authorizer: {
-        name: 'authorizerOwnerKey',
+        name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
         type: 'request'
       },

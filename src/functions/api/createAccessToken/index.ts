@@ -2,8 +2,8 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [{
     http: {
-      method: 'GET',
-      path: '/applications/{appId}/api-keys',
+      method: 'POST',
+      path: '/access-token',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -18,11 +18,16 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:Query'],
+      Action: ['dynamodb:PutItem'],
       Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
     },
+    {
+      Effect: 'Allow',
+      Action: ['apigateway:POST'],
+      Resource: ['arn:aws:apigateway:us-east-1::/usageplans', 'arn:aws:apigateway:us-east-1::/apikeys', 'arn:aws:apigateway:us-east-1::/usageplans/*/keys']
+    }
   ],
   tags: {
-    function: 'listApiKeys',
+    function: 'createAccessToken',
   },
 }

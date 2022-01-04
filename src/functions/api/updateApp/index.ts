@@ -5,7 +5,7 @@ export default {
       method: 'PUT',
       path: '/applications/{appId}',
       authorizer: {
-        name: 'authorizerOwnerKey',
+        name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
         type: 'request'
       },

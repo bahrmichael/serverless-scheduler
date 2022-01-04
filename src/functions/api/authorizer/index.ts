@@ -11,6 +11,6 @@ export default {
     },
   ],
   tags: {
-    function: 'authorizeOwnerKey'
+    function: 'authorizer'
   }
 }

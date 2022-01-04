@@ -33,23 +33,24 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         const buff = Buffer.from(data, 'base64');
         const decoded = buff.toString('ascii');
         const parts = decoded.split(':');
-        appId = parts[0];
+        const id  = parts[0];
         const publicApiKey = parts[1];
 
         const apiKeyRecord: ApiKeyRecord = (await ddb.get({
             TableName: API_KEY_TABLE,
-            Key: {appId, apiKey: publicApiKey},
+            Key: {pk: id, apiKey: publicApiKey},
         }).promise()).Item as ApiKeyRecord;
 
-        owner = apiKeyRecord?.owner;
-        apiKey = apiKeyRecord?.apigwApiKeyValue;
-
-        if (!apiKeyRecord?.active) {
+        if (!apiKeyRecord?.active || ['/access-token'].includes(event.path)) {
             metrics.putMetric("AccessDenied", 1, "Count");
             return generatePolicy('user', 'Deny', event.methodArn);
         }
+
+        owner = apiKeyRecord.owner;
+        apiKey = apiKeyRecord.apigwApiKeyValue;
+        appId = apiKey.appId;
     } else {
-        console.log('Auth:Token');
+        console.log('Auth:ApiGwToken');
         apiKey = authorizationToken;
         owner = event.headers.owner;
         appId = event.headers.appId;

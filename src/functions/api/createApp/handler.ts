@@ -26,7 +26,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const usagePlanId = (await apigw.createUsagePlan({
         name: id,
-        description: `Owner:${owner}`,
+        description: `App:${id},Owner:${owner}`,
         throttle: {
             rateLimit: 100,
             burstLimit: 500,

@@ -5,7 +5,7 @@ export default {
       method: 'PUT',
       path: '/applications/{appId}/api-keys/{apiKeyId}/deactivate',
       authorizer: {
-        name: 'authorizerOwnerKey',
+        name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
         type: 'request'
       },
