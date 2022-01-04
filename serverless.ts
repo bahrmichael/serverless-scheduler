@@ -68,6 +68,12 @@ const serverlessConfiguration: AWS = {
     },
     resources: {
         Resources: {
+            NoCachingAuthorizer: {
+                Type: 'AWS::ApiGateway::Authorizer',
+                Properties: {
+                    AuthorizerResultTtlInSeconds: 0
+                }
+            },
             MeteringTable: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
