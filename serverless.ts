@@ -68,6 +68,7 @@ const serverlessConfiguration: AWS = {
     },
     resources: {
         Resources: {
+            // https://forum.serverless.com/t/authorizers-cache/1127/6
             NoCachingAuthorizer: {
                 Type: 'AWS::ApiGateway::Authorizer',
                 Properties: {
