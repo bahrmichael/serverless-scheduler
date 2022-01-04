@@ -64,11 +64,13 @@ export interface Message {
 
 export interface ApiKeyRecord {
     id: string;
-    appId: string;
+    pk: string; // can be appId or owner
     apiKey: string;
     owner: string;
     active: boolean;
     created: string;
     apigwApiKeyId: string;
     apigwApiKeyValue: string;
+    type: 'API_KEY' | 'ACCESS_TOKEN';
+    usagePlanId?: string;
 }
