@@ -9,26 +9,23 @@ const {API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {pathParameters, requestContext} = event;
+    const {requestContext} = event;
     const {owner} = requestContext.authorizer;
-    const {appId} = pathParameters;
 
     const items: any[] = (await ddb.query({
         TableName: API_KEY_TABLE,
-        KeyConditionExpression: 'pk = :a',
-        FilterExpression: '#owner = :o and #type = :t',
+        KeyConditionExpression: 'pk = :o',
+        FilterExpression: '#type = :t',
         ExpressionAttributeNames: {
-            '#owner': 'owner',
             '#type': 'type',
         },
         ExpressionAttributeValues: {
-            ':a': appId,
             ':o': owner,
-            ':t': 'API_KEY',
+            ':t': 'ACCESS_TOKEN',
         },
     }).promise()).Items ?? [];
 
-    const mappedApiKeys = items.map(({id, created, active}) => {
+    const mappedAccessTokens = items.map(({id, created, active}) => {
         return {
             id,
             created,
@@ -36,13 +33,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     });
 
-    metrics.setNamespace("DEV/ServerlessScheduler/ListApiKeys");
+    metrics.setNamespace("DEV/ServerlessScheduler/ListAccessTokens");
     metrics.setProperty("Owner", owner);
-    metrics.setProperty("App", appId);
-    metrics.setProperty("Count", mappedApiKeys.length);
+    metrics.setProperty("Count", mappedAccessTokens.length);
 
     return {
         statusCode: 200,
-        body: JSON.stringify(mappedApiKeys),
+        body: JSON.stringify(mappedAccessTokens),
     }
 });

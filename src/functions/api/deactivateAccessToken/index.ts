@@ -2,8 +2,8 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [{
     http: {
-      method: 'POST',
-      path: '/access-tokens',
+      method: 'PUT',
+      path: '/access-tokens/{accessTokenId}/deactivate',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -18,16 +18,16 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:PutItem'],
+      Action: ['dynamodb:UpdateItem'],
       Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
     },
     {
       Effect: 'Allow',
-      Action: ['apigateway:POST'],
-      Resource: ['arn:aws:apigateway:us-east-1::/usageplans', 'arn:aws:apigateway:us-east-1::/apikeys', 'arn:aws:apigateway:us-east-1::/usageplans/*/keys']
-    }
+      Action: ['dynamodb:Query'],
+      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['ApiKeyTable', 'Arn' ] }, 'index', 'apiKeyIdIndex' ]]}
+    },
   ],
   tags: {
-    function: 'createAccessToken',
+    function: 'deactivateAccessToken',
   },
 }

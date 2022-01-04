@@ -15,3 +15,5 @@ export { default as abortMessage } from './api/abortMessage';
 export { default as redriveMessage } from './api/redriveMessage';
 export { default as meterIngestRelease } from './metering/ingestAndRelease';
 export { default as createAccessToken } from './api/createAccessToken';
+export { default as listAccessTokens } from './api/listAccessTokens';
+export { default as deactivateAccessToken } from './api/deactivateAccessToken';

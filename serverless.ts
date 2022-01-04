@@ -3,10 +3,10 @@ import type {AWS} from '@serverless/typescript';
 import {
     authorizer, createAccessToken,
     createApiKey,
-    createApp,
+    createApp, deactivateAccessToken,
     deactivateApiKey,
     getApp,
-    ingestMessage,
+    ingestMessage, listAccessTokens,
     listApiKeys,
     listApps,
     listMessages,
@@ -65,6 +65,8 @@ const serverlessConfiguration: AWS = {
         listMessages,
         meterIngestRelease,
         createAccessToken,
+        listAccessTokens,
+        deactivateAccessToken,
     },
     resources: {
         extensions: {
