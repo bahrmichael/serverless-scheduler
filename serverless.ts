@@ -67,14 +67,15 @@ const serverlessConfiguration: AWS = {
         createAccessToken,
     },
     resources: {
-        Resources: {
+        extensions: {
             // https://forum.serverless.com/t/authorizers-cache/1127/6
-            NoCachingAuthorizer: {
-                Type: 'AWS::ApiGateway::Authorizer',
+            AuthorizerApiGatewayAuthorizer: {
                 Properties: {
                     AuthorizerResultTtlInSeconds: 0
                 }
             },
+        },
+        Resources: {
             MeteringTable: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {
