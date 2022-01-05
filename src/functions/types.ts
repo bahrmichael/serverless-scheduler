@@ -73,4 +73,5 @@ export interface ApiKeyRecord {
     apigwApiKeyValue: string;
     type: 'API_KEY' | 'ACCESS_TOKEN';
     usagePlanId?: string;
+    appId?: string;
 }

@@ -54,6 +54,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const apiKeyRecord: ApiKeyRecord = {
         id,
         pk: appId,
+        appId,
         apiKey,
         owner,
         apigwApiKeyId: apigwApiKey.id,
