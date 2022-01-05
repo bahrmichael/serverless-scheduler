@@ -5,6 +5,7 @@ import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
 import {ApiKeyRecord, App} from "../../types";
+import {generateToken} from "../../crypto";
 
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
@@ -32,7 +33,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
-    const apiKey = uuid();
+    const apiKey = await generateToken();
     const id = uuid();
 
     const apigwApiKey = await apigw.createApiKey({
