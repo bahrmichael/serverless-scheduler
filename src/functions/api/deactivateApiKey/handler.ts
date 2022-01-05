@@ -43,7 +43,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         await ddb.update({
             TableName: API_KEY_TABLE,
             Key: {
-                appId,
+                pk: appId,
                 apiKey,
             },
             UpdateExpression: 'set #active = :a',
