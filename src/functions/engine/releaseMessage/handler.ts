@@ -53,9 +53,10 @@ async function increaseErrorCount(message: Message) {
 }
 
 async function setFailed(m: Message) {
-  m.errorCount += 1;
-  m.gsi1pk = `${m.owner}#${MessageStatus.FAILED}`;
+  m.errorCount = m.errorCount > 0 ? m.errorCount + 1 : 1;
+  m.gsi1pk = `${m.appId}#${MessageStatus.FAILED}`;
   m.gsi1sk = m.messageId;
+  m.status = MessageStatus.FAILED;
 
   await ddb.put({
     TableName: MESSAGES_TABLE,
