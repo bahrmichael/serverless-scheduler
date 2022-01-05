@@ -48,7 +48,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
 
         owner = apiKeyRecord.owner;
         apiKey = apiKeyRecord.apigwApiKeyValue;
-        appId = apiKey.appId;
+        appId = apiKeyRecord.appId;
     } else {
         console.log('Auth:ApiGwToken');
         apiKey = authorizationToken;
