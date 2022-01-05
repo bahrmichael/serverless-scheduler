@@ -27,7 +27,12 @@ export default {
       Effect: 'Allow',
       Action: ['apigateway:POST'],
       Resource: ['arn:aws:apigateway:us-east-1::/usageplans', 'arn:aws:apigateway:us-east-1::/apikeys', 'arn:aws:apigateway:us-east-1::/usageplans/*/keys']
-    }
+    },
+    {
+      Effect: 'Allow',
+      Action: ['apigateway:PATCH'],
+      Resource: ['arn:aws:apigateway:us-east-1::/usageplans/*']
+    },
   ],
   tags: {
     function: 'createAccessToken',
