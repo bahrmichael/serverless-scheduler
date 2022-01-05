@@ -1,9 +1,10 @@
 import * as crypto from "crypto";
 const bcrypt = require('bcrypt');
 
-const saltRounds = 5;
+const saltRounds = 10;
 
 export async function generateToken(): Promise<string> {
     const token = crypto.randomUUID();
-    return await bcrypt.hash(token, saltRounds);
+    const hash = await bcrypt.hash(token, saltRounds);
+    return hash.slice(-31);
 }
