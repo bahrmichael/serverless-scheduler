@@ -9,6 +9,7 @@ export { default as createApiKey } from './api/createApiKey';
 export { default as listApiKeys } from './api/listApiKeys';
 export { default as deactivateApiKey } from './api/deactivateApiKey';
 export { default as createApp } from './api/createApp';
+export { default as deleteApp } from './api/deleteApp';
 export { default as updateApp } from './api/updateApp';
 export { default as listMessages } from './api/listMessages';
 export { default as abortMessage } from './api/abortMessage';
