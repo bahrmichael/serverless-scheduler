@@ -10,7 +10,7 @@ import {generateToken} from "../../crypto";
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
 
-const {API_KEY_TABLE} = process.env;
+const {API_KEY_TABLE, API_ID, STAGE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
@@ -34,6 +34,15 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const apigwApiKey = await apigw.createApiKey({
         enabled: true,
         name: id,
+    }).promise();
+
+    await apigw.updateUsagePlan({
+        usagePlanId,
+        patchOperations: [{
+            op: 'add',
+            path: '/apiStages',
+            value: `${API_ID}:${STAGE}`
+        }]
     }).promise();
     try {
         await apigw.createUsagePlanKey({

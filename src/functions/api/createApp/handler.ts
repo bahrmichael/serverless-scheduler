@@ -9,7 +9,7 @@ import {App} from "../../types";
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
 
-const {APPLICATIONS_TABLE} = process.env;
+const {APPLICATIONS_TABLE, API_ID, STAGE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
@@ -36,6 +36,14 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             period: "DAY",
         }
     }).promise()).id;
+    await apigw.updateUsagePlan({
+        usagePlanId,
+        patchOperations: [{
+            op: 'add',
+            path: '/apiStages',
+            value: `${API_ID}:${STAGE}`
+        }]
+    }).promise();
 
     const app: App = {
         owner,

@@ -14,7 +14,8 @@ export default {
   }],
   environment: {
     APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
-    API_GATEWAY_ID: {Ref: 'ApiGatewayRestApi'}
+    API_ID: {Ref: 'ApiGatewayRestApi'},
+    STAGE: '${env:STAGE, "dev"}',
   },
   iamRoleStatements: [
     {

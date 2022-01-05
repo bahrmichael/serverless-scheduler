@@ -14,6 +14,8 @@ export default {
   }],
   environment: {
     API_KEY_TABLE: {Ref: 'ApiKeyTable'},
+    API_ID: {Ref: 'ApiGatewayRestApi'},
+    STAGE: '${env:STAGE, "dev"}',
   },
   iamRoleStatements: [
     {
