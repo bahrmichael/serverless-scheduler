@@ -17,7 +17,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         TableName: APPLICATIONS_TABLE,
         Key: {owner, sk: `app#${appId}`}
     }).promise();
-    ///////////////////////
 
     // todo: clean up usage plans and api keys behind the scenes
 
