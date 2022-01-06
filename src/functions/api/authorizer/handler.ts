@@ -24,6 +24,11 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
     metrics.setProperty("Resource", event.pathParameters);
     console.log({authorizationToken});
 
+    if (!authorizationToken) {
+        metrics.putMetric("AccessDenied", 1, "Count");
+        return generatePolicy('user', 'Deny', event.methodArn);
+    }
+
     let appId;
     let apiKey;
     let owner;
