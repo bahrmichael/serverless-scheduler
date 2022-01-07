@@ -1,4 +1,4 @@
-name: serverless-scheduler
+name: serverless-scheduler-dev
 
 on:
   push:
