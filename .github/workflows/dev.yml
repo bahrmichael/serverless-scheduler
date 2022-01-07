@@ -3,7 +3,8 @@ name: serverless-scheduler
 on:
   push:
     branches:
-      - main
+      - '*'
+      - '!main'
 
 env:
   SERVICE_FOLDER: .
@@ -11,15 +12,15 @@ env:
 
 jobs:
   deploy:
-    name: ServerlessSchedulerMain
+    name: ServerlessSchedulerDev
     runs-on: ubuntu-latest
-    concurrency: ServerlessSchedulerConcurrencyGroupMain
+    concurrency: ServerlessSchedulerConcurrencyGroupDev
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: us-east-1
-      PROD_ACCOUNT_ID: ${{ secrets.PROD_ACCOUNT_ID }}
+      DEV_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
 
     steps:
       - uses: actions/checkout@v2
@@ -39,9 +40,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: 'Deploying to stage: prod'
+      - name: 'Deploying to stage: dev'
         uses: './.github/actions/sls-deploy'
         with:
           service-folder: ${{ env.SERVICE_FOLDER }}
-          stage: prod
-          aws-account-id: ${{ env.PROD_ACCOUNT_ID }}
+          stage: dev
+          aws-account-id: ${{ env.DEV_ACCOUNT_ID }}
