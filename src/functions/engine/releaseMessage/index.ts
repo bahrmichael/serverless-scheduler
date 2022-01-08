@@ -8,9 +8,15 @@ export default {
   }],
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
+    MESSAGE_LOGS_TABLE: {Ref: 'MessageLogsTable'},
     APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: ['dynamodb:PutItem'],
+      Resource: {'Fn::GetAtt': ['MessageLogsTable', 'Arn']}
+    },
     {
       Effect: 'Allow',
       Action: ['dynamodb:UpdateItem', 'dynamodb:GetItem', 'dynamodb:PutItem'],

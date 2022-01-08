@@ -224,6 +224,32 @@ const serverlessConfiguration: AWS = {
                     }]
                 }
             },
+            MessageLogsTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'messageId',
+                        KeyType: 'HASH'
+                    }, {
+                        AttributeName: 'timestamp',
+                        KeyType: 'RANGE'
+                    }],
+
+                    AttributeDefinitions: [{
+                        AttributeName: 'messageId',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'timestamp',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'Table',
+                        Value: 'MessageLogsTable'
+                    }],
+                }
+
+            },
             MessagesTable: {
                 Type: 'AWS::DynamoDB::Table',
                 Properties: {

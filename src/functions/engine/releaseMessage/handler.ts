@@ -13,7 +13,7 @@ const https = axios.create({
 
 axiosRetry(https, { retries: 2 });
 
-const {MESSAGES_TABLE, APPLICATIONS_TABLE} = process.env;
+const {MESSAGES_TABLE, APPLICATIONS_TABLE, MESSAGE_LOGS_TABLE} = process.env;
 
 const DAY = 24 * 60 * 60;
 
@@ -160,6 +160,28 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     } else {
       await setFailed(m);
     }
+
+    try {
+      if (e?.response) {
+        const {status, statusText, data} = e?.response;
+        await writeErrorLogs(message.messageId, released, {status, statusText, data});
+      } else {
+        console.log('Not writing error data because of unexpected format.', e);
+      }
+    } catch (e) {
+      console.error('Failed to write error logs', e);
+    }
   }
 });
+
+async function writeErrorLogs(messageId: string, released: Date, data: { data: any; statusText: any; status: any }): Promise<void> {
+  await ddb.put({
+    TableName: MESSAGE_LOGS_TABLE,
+    Item: {
+      messageId,
+      timestamp: released.toISOString(),
+      data,
+    }
+  }).promise();
+}
 
