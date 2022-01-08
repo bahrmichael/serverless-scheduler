@@ -62,6 +62,14 @@ export interface Message {
 
 }
 
+export interface MessageLog {
+    owner: string;
+    appId: string;
+    messageId: string;
+    timestamp: string;
+    data: any;
+}
+
 export interface ApiKeyRecord {
     id: string;
     pk: string; // can be appId or owner
