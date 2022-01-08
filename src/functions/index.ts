@@ -18,3 +18,4 @@ export { default as meterIngestRelease } from './metering/ingestAndRelease';
 export { default as createAccessToken } from './api/createAccessToken';
 export { default as listAccessTokens } from './api/listAccessTokens';
 export { default as deactivateAccessToken } from './api/deactivateAccessToken';
+export { default as listMessageLogs } from './api/listMessageLogs';

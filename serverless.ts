@@ -8,7 +8,7 @@ import {
     getApp,
     ingestMessage, listAccessTokens,
     listApiKeys,
-    listApps,
+    listApps, listMessageLogs,
     listMessages,
     meterIngestRelease,
     pullForOwner,
@@ -68,6 +68,7 @@ const serverlessConfiguration: AWS = {
         createAccessToken,
         listAccessTokens,
         deactivateAccessToken,
+        listMessageLogs,
     },
     resources: {
         extensions: {
