@@ -138,9 +138,9 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     metrics.putMetric("Failed", 1, "Count");
 
     if (e?.response) {
-      console.warn(e.response);
+      console.warn('response', e.response);
     } else {
-      console.warn(e);
+      console.warn('full', e);
     }
 
     const m: Message = (await ddb.get({
