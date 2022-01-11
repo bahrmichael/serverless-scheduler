@@ -18,11 +18,11 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:GetItem', 'dynamodb:UpdateItem'],
+      Action: ['dynamodb:GetItem', 'dynamodb:PutItem'],
       Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
   ],
   tags: {
-    function: 'createApp',
+    function: 'updateApp',
   },
 }

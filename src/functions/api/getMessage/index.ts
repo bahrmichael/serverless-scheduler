@@ -2,8 +2,8 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [{
     http: {
-      method: 'PUT',
-      path: '/applications/{appId}/messages/{messageId}/abort',
+      method: 'GET',
+      path: '/applications/{appId}/messages/{messageId}',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -14,21 +14,21 @@ export default {
   }],
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
-    MESSAGE_LOGS_TABLE: {Ref: 'MessageLogsTable'},
+    APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:UpdateItem'],
+      Action: ['dynamodb:GetItem'],
       Resource: {'Fn::GetAtt': ['MessagesTable', 'Arn']}
     },
     {
       Effect: 'Allow',
-      Action: ['dynamodb:PutItem'],
-      Resource: {'Fn::GetAtt': ['MessageLogsTable', 'Arn']}
+      Action: ['dynamodb:GetItem'],
+      Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
   ],
   tags: {
-    function: 'abortMessage',
+    function: 'getMessage',
   },
 }

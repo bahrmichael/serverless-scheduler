@@ -35,6 +35,13 @@ async function setReleased(message: Message, released: Date) {
             ':t': Math.floor(new Date().getTime() / 1_000 + DAY * 30),
         }
     }).promise();
+    await writeMessageLog({
+        owner: message.owner,
+        appId: message.appId,
+        messageId: message.messageId,
+        timestamp: new Date().toISOString(),
+        data: {status: 200, data: `Message sent with a delay of ${released.getTime() - new Date(message.sendAt).getTime()} ms.`},
+    });
 }
 
 async function increaseErrorCount(message: Message) {
@@ -171,13 +178,13 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
 
         try {
             if (e?.response) {
-                const {status, statusText, data} = e?.response;
+                const {status, data} = e?.response;
                 const entry: MessageLog = {
                     messageId: message.messageId,
                     owner: message.owner,
                     appId: message.appId,
                     timestamp: released.toISOString(),
-                    data: {status, statusText, data},
+                    data: {status, data},
                 };
                 await writeMessageLog(entry);
             } else {

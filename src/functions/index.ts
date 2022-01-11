@@ -19,3 +19,4 @@ export { default as createAccessToken } from './api/createAccessToken';
 export { default as listAccessTokens } from './api/listAccessTokens';
 export { default as deactivateAccessToken } from './api/deactivateAccessToken';
 export { default as listMessageLogs } from './api/listMessageLogs';
+export { default as getMessage } from './api/getMessage';

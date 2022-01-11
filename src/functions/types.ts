@@ -45,7 +45,8 @@ export interface Message {
     messageId: string;
     sendAt: string;
     status: MessageStatus;
-    payload: string;
+    payload: any;
+    created: string;
     /*
     We use the GSI1 for loading READY items. We populate it when inserting items, and clear the fields when we queue them.
     The PK is <owner>#<status> and the SK is <date>#<ULID>.
@@ -67,7 +68,7 @@ export interface MessageLog {
     appId: string;
     messageId: string;
     timestamp: string;
-    data: any;
+    data: {status: number, data: string};
 }
 
 export interface ApiKeyRecord {

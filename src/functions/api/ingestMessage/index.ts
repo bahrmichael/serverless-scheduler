@@ -17,8 +17,14 @@ export default {
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
     QUEUE_URL: {Ref: 'ReleaseQueue'},
+    MESSAGE_LOGS_TABLE: {Ref: 'MessageLogsTable'},
   },
   iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: ['dynamodb:PutItem'],
+      Resource: {'Fn::GetAtt': ['MessageLogsTable', 'Arn']}
+    },
     {
       Effect: 'Allow',
       Action: ['dynamodb:PutItem'],

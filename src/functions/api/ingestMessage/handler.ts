@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import * as SQS from 'aws-sdk/clients/sqs';
-import {Message, MessageStatus} from "../../types";
+import {Message, MessageLog, MessageStatus} from "../../types";
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {ulid} from "ulid";
 import {calculateDelay} from "../../util";
@@ -10,7 +10,7 @@ import {metricScope} from "aws-embedded-metrics";
 const ddb = new DynamoDB.DocumentClient();
 const sqs = new SQS();
 
-const {MESSAGES_TABLE, QUEUE_URL} = process.env;
+const {MESSAGES_TABLE, QUEUE_URL, MESSAGE_LOGS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
     console.log({requestContext: event.requestContext});
@@ -37,7 +37,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     message.owner = owner;
     message.appId = appId;
-    message.messageId = `${message.sendAt}#${ulid()}`;
+    message.messageId = ulid();
+    message.created = new Date().toISOString();
 
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);
@@ -52,11 +53,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
         message.status = MessageStatus.QUEUED;
 
-        await ddb.put({
-            TableName: MESSAGES_TABLE,
-            Item: message,
-        }).promise();
-
         metrics.putMetric("ShortTerm", 1, "Count");
         metrics.putMetric("Queued", 1, "Count");
     } else {
@@ -64,15 +60,22 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
         message.status = MessageStatus.READY;
         message.gsi1pk = `${appId}#${MessageStatus.READY}`;
-        message.gsi1sk = message.messageId;
-
-        await ddb.put({
-            TableName: MESSAGES_TABLE,
-            Item: message,
-        }).promise();
+        message.gsi1sk = `${message.sendAt}#${message.messageId}`;
 
         metrics.putMetric("LongTerm", 1, "Count");
     }
+
+    await ddb.put({
+        TableName: MESSAGES_TABLE,
+        Item: message,
+    }).promise();
+    await writeMessageLog({
+        owner,
+        appId,
+        messageId: message.messageId,
+        timestamp: message.created,
+        data: {status: 200, data: `Message scheduled for ${message.sendAt}.`},
+    });
 
     metrics.setNamespace("DEV/ServerlessScheduler/Ingest");
     metrics.setProperty("Owner", owner);
@@ -81,8 +84,15 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify({messageId: message.messageId}),
+        body: JSON.stringify({scheduledMessageId: message.messageId}),
     }
 });
+
+async function writeMessageLog(messageLog: MessageLog): Promise<void> {
+    await ddb.put({
+        TableName: MESSAGE_LOGS_TABLE,
+        Item: messageLog,
+    }).promise();
+}
 
 // todo: can we use a low batch size, or maybe 1 to achieve high isolation?
