@@ -5,7 +5,7 @@ import {
     createApiKey,
     createApp, deactivateAccessToken,
     deactivateApiKey, deleteApp,
-    getApp,
+    getApp, getMessage,
     ingestMessage, listAccessTokens,
     listApiKeys,
     listApps, listMessageLogs,
@@ -69,6 +69,7 @@ const serverlessConfiguration: AWS = {
         listAccessTokens,
         deactivateAccessToken,
         listMessageLogs,
+        getMessage,
     },
     resources: {
         extensions: {
