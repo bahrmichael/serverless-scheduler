@@ -37,7 +37,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     message.owner = owner;
     message.appId = appId;
-    message.messageId = `${message.sendAt}#${ulid()}`;
+    message.messageId = ulid();
 
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);
@@ -64,7 +64,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
         message.status = MessageStatus.READY;
         message.gsi1pk = `${appId}#${MessageStatus.READY}`;
-        message.gsi1sk = message.messageId;
+        message.gsi1sk = `${message.sendAt}#${message.messageId}`;
 
         await ddb.put({
             TableName: MESSAGES_TABLE,
@@ -81,7 +81,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     return {
         statusCode: 200,
-        body: JSON.stringify({messageId: message.messageId}),
+        body: JSON.stringify({scheduledMessageId: message.messageId}),
     }
 });
 
