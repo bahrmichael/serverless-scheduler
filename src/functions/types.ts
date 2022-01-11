@@ -46,6 +46,7 @@ export interface Message {
     sendAt: string;
     status: MessageStatus;
     payload: any;
+    created: string;
     /*
     We use the GSI1 for loading READY items. We populate it when inserting items, and clear the fields when we queue them.
     The PK is <owner>#<status> and the SK is <date>#<ULID>.

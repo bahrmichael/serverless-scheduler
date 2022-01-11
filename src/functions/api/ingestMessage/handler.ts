@@ -38,6 +38,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     message.owner = owner;
     message.appId = appId;
     message.messageId = ulid();
+    message.created = new Date().toISOString();
 
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);

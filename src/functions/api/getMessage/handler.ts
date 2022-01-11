@@ -39,6 +39,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         messageId: m.messageId,
         sendAt: m.sendAt,
         status: m.status,
+        created: m.created,
     };
 
     metrics.setNamespace("DEV/ServerlessScheduler/ListMessages");
