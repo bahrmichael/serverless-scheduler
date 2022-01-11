@@ -111,7 +111,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
             }
             // todo: error handling, retries
             // example: don't return a status code from the contracts appraisal
-            await https.post(app.endpoint, message.payload, {headers});
+            await https.post(app.endpoint, {payload: message.payload}, {headers});
         } else {
             console.error('Unhandled app type', app.type);
             throw Error('Unhandled app type.');
