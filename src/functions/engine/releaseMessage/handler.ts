@@ -40,7 +40,7 @@ async function setReleased(message: Message, released: Date) {
         appId: message.appId,
         messageId: message.messageId,
         timestamp: new Date().toISOString(),
-        data: {status: 200, data: 'Message sent.'},
+        data: {status: 200, data: `Message sent with delay of ${released.getTime() - new Date(message.sendAt).getTime()} ms.`},
     });
 }
 

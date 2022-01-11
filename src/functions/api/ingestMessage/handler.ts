@@ -65,7 +65,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         metrics.putMetric("LongTerm", 1, "Count");
     }
 
-
     await ddb.put({
         TableName: MESSAGES_TABLE,
         Item: message,
@@ -75,7 +74,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         appId,
         messageId: message.messageId,
         timestamp: message.created,
-        data: {status: 200, data: 'Message scheduled.'},
+        data: {status: 200, data: `Message scheduled for ${message.sendAt}.`},
     });
 
     metrics.setNamespace("DEV/ServerlessScheduler/Ingest");
