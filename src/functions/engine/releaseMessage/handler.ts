@@ -35,6 +35,13 @@ async function setReleased(message: Message, released: Date) {
             ':t': Math.floor(new Date().getTime() / 1_000 + DAY * 30),
         }
     }).promise();
+    await writeMessageLog({
+        owner: message.owner,
+        appId: message.appId,
+        messageId: message.messageId,
+        timestamp: new Date().toISOString(),
+        data: {status: 200, data: 'Message sent.'},
+    });
 }
 
 async function increaseErrorCount(message: Message) {

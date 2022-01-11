@@ -14,12 +14,18 @@ export default {
   }],
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
+    MESSAGE_LOGS_TABLE: {Ref: 'MessageLogsTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:UpdateItem'],
       Resource: {'Fn::GetAtt': ['MessagesTable', 'Arn']}
+    },
+    {
+      Effect: 'Allow',
+      Action: ['dynamodb:PutItem'],
+      Resource: {'Fn::GetAtt': ['MessageLogsTable', 'Arn']}
     },
   ],
   tags: {
