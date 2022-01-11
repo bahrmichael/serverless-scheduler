@@ -32,7 +32,10 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const logs: MessageLog[] = (await ddb.query({
         TableName: MESSAGE_LOGS_TABLE,
         KeyConditionExpression: 'messageId = :m',
-        FilterExpression: 'owner = :o and appId = :a',
+        FilterExpression: '#owner = :o and appId = :a',
+        ExpressionAttributeNames: {
+            '#owner': 'owner',
+        },
         ExpressionAttributeValues: {
             ':m': messageId,
             ':o': owner,
