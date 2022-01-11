@@ -40,7 +40,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     if (httpAuthorization) {
         app.httpAuthorization = {
             headerName: httpAuthorization.headerName,
-            headerValue: httpAuthorization.headerValue ?? app.httpAuthorization.headerValue,
+            headerValue: httpAuthorization.headerValue ?? app.httpAuthorization?.headerValue,
         }
     }
     await ddb.put({
