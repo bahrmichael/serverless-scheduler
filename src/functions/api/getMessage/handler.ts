@@ -29,11 +29,17 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
-    const message: Message = (await ddb.get({
+    const m: Message = (await ddb.get({
         TableName: MESSAGES_TABLE,
         Key: {appId, messageId}
     }).promise()).Item as Message;
 
+    const message = {
+        appId: m.appId,
+        messageId: m.messageId,
+        sendAt: m.sendAt,
+        status: m.status,
+    };
 
     metrics.setNamespace("DEV/ServerlessScheduler/ListMessages");
     metrics.setProperty("Owner", owner);
