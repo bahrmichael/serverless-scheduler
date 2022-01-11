@@ -68,7 +68,7 @@ export interface MessageLog {
     appId: string;
     messageId: string;
     timestamp: string;
-    data: any;
+    data: {status: number, data: string};
 }
 
 export interface ApiKeyRecord {
