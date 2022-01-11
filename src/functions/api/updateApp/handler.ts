@@ -38,7 +38,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     let updateExpression = 'set #name = :n, description = :d, endpoint = :e, httpAuthorization.headerName = :a';
     const values: any = {
         ':n': name,
-        ':d': description,
+        ':d': description ?? '',
         ':e': endpoint,
         ':a': httpAuthorization.headerName,
     };
