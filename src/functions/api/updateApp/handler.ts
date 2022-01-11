@@ -15,48 +15,37 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const {appId} = pathParameters;
 
     // logging the type yielded "INFO typeof body object", but typescript things that the body is a string
-    console.log({body});
     const data: App = typeof body === 'object' ? body : JSON.parse(body);
     console.log({data});
     const {name, description, endpoint, httpAuthorization} = data;
 
-    const existingApp = (await ddb.get({
+    const app: App = (await ddb.get({
         TableName: APPLICATIONS_TABLE,
         Key: {
             owner,
             sk: `app#${appId}`,
         }
-    }).promise()).Item;
+    }).promise()).Item as App;
 
-    if (!existingApp) {
+    if (!app) {
         return {
             statusCode: 404,
             body: 'app_not_found',
         };
     }
 
-    let updateExpression = 'set #name = :n, description = :d, endpoint = :e, httpAuthorization.headerName = :a';
-    const values: any = {
-        ':n': name,
-        ':d': description ?? '',
-        ':e': endpoint,
-        ':a': httpAuthorization.headerName,
-    };
-    if (httpAuthorization.headerValue) {
-        updateExpression += ', httpAuthorization.headerValue = :v';
-        values[':v'] = httpAuthorization.headerValue;
+    app.name = name ?? app.name;
+    app.description = description ?? app.description;
+    app.endpoint = endpoint ?? app.description;
+    if (httpAuthorization) {
+        app.httpAuthorization = {
+            headerName: httpAuthorization.headerName,
+            headerValue: httpAuthorization.headerValue ?? app.httpAuthorization.headerValue,
+        }
     }
-    await ddb.update({
+    await ddb.put({
         TableName: APPLICATIONS_TABLE,
-        Key: {
-            owner,
-            sk: `app#${appId}`,
-        },
-        UpdateExpression: updateExpression,
-        ExpressionAttributeNames: {
-            '#name': 'name',
-        },
-        ExpressionAttributeValues: values,
+        Item: app,
     }).promise();
 
     metrics.setNamespace("DEV/ServerlessScheduler/UpdateApp");
