@@ -15,7 +15,14 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
 
     let authorizationToken;
     if (event.type === 'REQUEST') {
-        authorizationToken = event.headers.Authorization;
+        /*
+        Lowercase the headers so that the customer doesn't have to respect casing on
+        the authorization header. E.g. insomnia sent a lowercase authorization header.
+         */
+        for (const key of Object.keys(event.headers)) {
+            event.headers[key.toLowerCase()] = event.headers[key];
+        }
+        authorizationToken = event.headers.authorization;
     } else {
         throw Error(`Unhandled authorizer event type: ${event.type}`);
     }
