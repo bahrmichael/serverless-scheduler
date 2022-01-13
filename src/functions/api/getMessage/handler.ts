@@ -3,10 +3,10 @@ import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {App, MessageLog} from "../../types";
+import {App, Message} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
-const {MESSAGE_LOGS_TABLE, APPLICATIONS_TABLE} = process.env;
+const {MESSAGES_TABLE, APPLICATIONS_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
@@ -29,28 +29,26 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
-    const logs: MessageLog[] = (await ddb.query({
-        TableName: MESSAGE_LOGS_TABLE,
-        KeyConditionExpression: 'messageId = :m',
-        FilterExpression: '#owner = :o and appId = :a',
-        ExpressionAttributeNames: {
-            '#owner': 'owner',
-        },
-        ExpressionAttributeValues: {
-            ':m': messageId,
-            ':o': owner,
-            ':a': appId,
-        },
-    }).promise()).Items as MessageLog[] ?? [];
+    const m: Message = (await ddb.get({
+        TableName: MESSAGES_TABLE,
+        Key: {appId, messageId}
+    }).promise()).Item as Message;
 
-    metrics.setNamespace("DEV/ServerlessScheduler/ListMessageLogs");
+    const message = {
+        appId: m.appId,
+        messageId: m.messageId,
+        sendAt: m.sendAt,
+        status: m.status,
+        created: m.created,
+    };
+
+    metrics.setNamespace("DEV/ServerlessScheduler/ListMessages");
     metrics.setProperty("Owner", owner);
     metrics.setProperty("AppId", appId);
-    metrics.setProperty("MessageId", messageId);
-    metrics.putMetric("LogCount", logs.length);
+    metrics.setProperty("MessageId", message.messageId);
 
     return {
         statusCode: 200,
-        body: JSON.stringify(logs),
+        body: JSON.stringify(message),
     }
 });
