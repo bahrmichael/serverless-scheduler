@@ -20,7 +20,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             appId,
             messageId,
         },
-        UpdateExpression: 'set #status = :s',
+        UpdateExpression: 'set #status = :s remove gsi1pk, gsi1sk',
         ExpressionAttributeNames: {
             '#status': 'status',
             '#owner': 'owner',

@@ -3,7 +3,7 @@ import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {MessageLog, MessageLogVersion, MessageStatus} from "../../types";
+import {Message, MessageLog, MessageLogVersion, MessageStatus} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 const {MESSAGES_TABLE, MESSAGE_LOGS_TABLE} = process.env;
@@ -14,13 +14,24 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const {owner} = requestContext.authorizer;
     const {appId, messageId} = pathParameters;
 
+    const message: Message = (await ddb.get({
+        TableName: MESSAGES_TABLE,
+        Key: {appId, messageId}
+    }).promise()).Item as Message;
+    if (!message) {
+        return {
+            statusCode: 404,
+            body: 'message_not_found',
+        }
+    }
+
     await ddb.update({
         TableName: MESSAGES_TABLE,
         Key: {
             appId,
             messageId,
         },
-        UpdateExpression: 'set #status = :s',
+        UpdateExpression: 'set #status = :s, gsi1pk = :pk, gsi1sk = :sk',
         ExpressionAttributeNames: {
             '#status': 'status',
             '#owner': 'owner',
@@ -28,6 +39,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         ExpressionAttributeValues: {
             ':s': MessageStatus.READY,
             ':o': owner,
+            ':pk': `${appId}#${MessageStatus.READY}`,
+            ':sk': `${message.sendAt}#${message.messageId}`
         },
         ConditionExpression: '#owner = :o'
     }).promise();

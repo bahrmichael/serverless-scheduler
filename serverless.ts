@@ -1,6 +1,7 @@
 import type {AWS} from '@serverless/typescript';
 
 import {
+    abortMessage,
     authorizer, createAccessToken,
     createApiKey,
     createApp, deactivateAccessToken,
@@ -12,6 +13,7 @@ import {
     listMessages,
     meterIngestRelease,
     pullForOwner,
+    redriveMessage,
     releaseMessage,
     schedulePull,
     updateApp,
@@ -70,6 +72,8 @@ const serverlessConfiguration: AWS = {
         deactivateAccessToken,
         listMessageLogs,
         getMessage,
+        abortMessage,
+        redriveMessage,
     },
     resources: {
         extensions: {
