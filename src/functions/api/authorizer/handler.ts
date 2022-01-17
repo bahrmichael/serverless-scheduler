@@ -68,6 +68,8 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         appId = event.headers.appId;
     }
 
+    // todo: authorize that an app/message actually belongs to the owner. better here than in each function individually.
+
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
 

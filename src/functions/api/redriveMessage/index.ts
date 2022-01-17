@@ -19,7 +19,7 @@ export default {
   iamRoleStatements: [
     {
       Effect: 'Allow',
-      Action: ['dynamodb:UpdateItem'],
+      Action: ['dynamodb:UpdateItem', 'dynamodb:GetItem'],
       Resource: {'Fn::GetAtt': ['MessagesTable', 'Arn']}
     },
     {
