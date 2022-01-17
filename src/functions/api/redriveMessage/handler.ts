@@ -3,7 +3,7 @@ import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {MessageLog, MessageStatus} from "../../types";
+import {MessageLog, MessageLogVersion, MessageStatus} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 const {MESSAGES_TABLE, MESSAGE_LOGS_TABLE} = process.env;
@@ -37,6 +37,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         messageId,
         timestamp: new Date().toISOString(),
         data: {status: 200, data: 'Message re-driven.'},
+        version: MessageLogVersion.A,
     });
 
     metrics.setNamespace("DEV/ServerlessScheduler/RedriveMessage");

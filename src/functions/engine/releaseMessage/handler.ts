@@ -1,6 +1,6 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {App, IntegrationType, Message, MessageLog, MessageStatus} from "../../types";
+import {App, IntegrationType, Message, MessageLog, MessageLogVersion, MessageStatus} from "../../types";
 import {SQSEvent} from "aws-lambda";
 import axios from 'axios';
 import {metricScope} from "aws-embedded-metrics";
@@ -41,6 +41,7 @@ async function setReleased(message: Message, released: Date) {
         messageId: message.messageId,
         timestamp: new Date().toISOString(),
         data: {status: 200, data: `Message sent with a delay of ${released.getTime() - new Date(message.sendAt).getTime()} ms.`},
+        version: MessageLogVersion.A,
     });
 }
 

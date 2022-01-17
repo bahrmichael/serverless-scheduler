@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
-import {App} from "../../types";
+import {App, AppVersion} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -45,6 +45,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             headerValue: httpAuthorization.headerValue ?? app.httpAuthorization?.headerValue,
         }
     }
+    app.version = AppVersion.A;
     await ddb.put({
         TableName: APPLICATIONS_TABLE,
         Item: app,

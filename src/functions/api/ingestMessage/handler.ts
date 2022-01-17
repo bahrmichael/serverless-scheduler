@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import * as SQS from 'aws-sdk/clients/sqs';
-import {Message, MessageLog, MessageStatus} from "../../types";
+import {Message, MessageLog, MessageLogVersion, MessageStatus, MessageVersion} from "../../types";
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {ulid} from "ulid";
 import {calculateDelay} from "../../util";
@@ -39,6 +39,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     message.appId = appId;
     message.messageId = ulid();
     message.created = new Date().toISOString();
+    message.version = MessageVersion.A;
 
     const in10Minutes = new Date();
     in10Minutes.setMinutes(in10Minutes.getMinutes() + 10);
@@ -75,6 +76,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         messageId: message.messageId,
         timestamp: message.created,
         data: {status: 200, data: `Message scheduled for ${message.sendAt}.`},
+        version: MessageLogVersion.A,
     });
 
     metrics.setNamespace("DEV/ServerlessScheduler/Ingest");
