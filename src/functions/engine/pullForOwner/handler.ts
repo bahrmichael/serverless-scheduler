@@ -58,7 +58,7 @@ export const main = metricScope(metrics => async (app: App) => {
 async function processMessage(messages: Message[], owner: string): Promise<void> {
     const entries: { Id: string, MessageBody: string, DelaySeconds: number }[] = messages.map((m) => {
         return {
-            // todo: introduce entity version!
+            // todo: Remove this once all messages have a version field.
             Id: m.messageId.includes('#') ? m.messageId.split("#")[1] : m.messageId,
             MessageBody: JSON.stringify(m),
             DelaySeconds: calculateDelay(m.sendAt),
