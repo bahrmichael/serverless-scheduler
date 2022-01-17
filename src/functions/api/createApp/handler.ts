@@ -4,7 +4,7 @@ import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
-import {App, AppVersion} from "../../types";
+import {App, AppVersion, IntegrationType} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
@@ -20,7 +20,22 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     console.log({body});
     const data = typeof body === 'object' ? body : JSON.parse(body);
     console.log({data});
-    const {name, description, endpoint, httpAuthorization, type} = data;
+    const {name, description, endpoint, httpAuthorization, type, sendBackFormat} = data;
+
+    if (!name || !endpoint || !type) {
+        return {
+            statusCode: 400,
+            body: 'missing_field',
+        };
+    }
+    if (type === IntegrationType.REST) {
+        if (!['unwrap_json', 'payload_field'].includes(sendBackFormat)) {
+            return {
+                statusCode: 400,
+                body: 'wrong_value_send_back_format',
+            };
+        }
+    }
 
     const id = uuid();
 
@@ -55,7 +70,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         endpoint,
         httpAuthorization,
         usagePlanId,
-        version: AppVersion.A
+        version: AppVersion.A,
+        sendBackFormat,
     };
 
     await ddb.put({

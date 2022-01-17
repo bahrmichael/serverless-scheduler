@@ -2,7 +2,7 @@ import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
-import {App, AppVersion} from "../../types";
+import {App, AppVersion, IntegrationType} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -17,7 +17,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     // logging the type yielded "INFO typeof body object", but typescript things that the body is a string
     const data: App = typeof body === 'object' ? body : JSON.parse(body);
     console.log({data});
-    const {name, description, endpoint, httpAuthorization} = data;
+    const {name, description, endpoint, httpAuthorization, sendBackFormat} = data;
 
     const app: App = (await ddb.get({
         TableName: APPLICATIONS_TABLE,
@@ -33,6 +33,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             body: 'app_not_found',
         };
     }
+    if (app.type === IntegrationType.REST && sendBackFormat && !['unwrap_json', 'payload_field'].includes(sendBackFormat)) {
+        return {
+            statusCode: 400,
+            body: 'wrong_value_send_back_format',
+        };
+    }
 
     app.name = name ?? app.name;
     app.description = description ?? app.description;
@@ -46,6 +52,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     }
     app.version = AppVersion.A;
+    app.sendBackFormat = sendBackFormat ?? app.sendBackFormat;
     await ddb.put({
         TableName: APPLICATIONS_TABLE,
         Item: app,
