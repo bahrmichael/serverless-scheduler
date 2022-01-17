@@ -20,7 +20,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     console.log({body});
     const data = typeof body === 'object' ? body : JSON.parse(body);
     console.log({data});
-    const {name, description, endpoint, httpAuthorization, type, sendBackFormat} = data;
+    // TODO: make const when the frontend had enough time to migrate over and we start to throw errors
+    let {name, description, endpoint, httpAuthorization, type, sendBackFormat} = data;
 
     if (!name || !endpoint || !type) {
         return {
@@ -30,10 +31,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     }
     if (type === IntegrationType.REST) {
         if (!['unwrap_json', 'payload_field'].includes(sendBackFormat)) {
-            return {
-                statusCode: 400,
-                body: 'wrong_value_send_back_format',
-            };
+            // Default to what the frontend previously had.
+            sendBackFormat = 'payload_field';
+            // TODO: return errors when the frontend had enough time to migrate over
+            // return {
+            //     statusCode: 400,
+            //     body: 'wrong_value_send_back_format',
+            // };
         }
     }
 

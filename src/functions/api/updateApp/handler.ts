@@ -34,10 +34,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
     if (app.type === IntegrationType.REST && sendBackFormat && !['unwrap_json', 'payload_field'].includes(sendBackFormat)) {
-        return {
-            statusCode: 400,
-            body: 'wrong_value_send_back_format',
-        };
+        // Default to what the frontend previously had.
+        app.sendBackFormat = 'payload_field';
+        // TODO: return errors when the frontend had enough time to migrate over
+        // return {
+        //     statusCode: 400,
+        //     body: 'wrong_value_send_back_format',
+        // };
     }
 
     app.name = name ?? app.name;
