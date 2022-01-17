@@ -1,6 +1,15 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
-import {App, IntegrationType, Message, MessageLog, MessageLogVersion, MessageStatus} from "../../types";
+import {
+    App,
+    AppVersion,
+    IntegrationType,
+    Message,
+    MessageLog,
+    MessageLogVersion,
+    MessageStatus,
+    MessageVersion
+} from "../../types";
 import {SQSEvent} from "aws-lambda";
 import axios from 'axios';
 import {metricScope} from "aws-embedded-metrics";
@@ -112,7 +121,19 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
             }
             // todo: error handling, retries
             // example: don't return a status code from the contracts appraisal
-            await https.post(app.endpoint, {payload: message.payload}, {headers});
+            if (message.version >= MessageVersion.A && app.version >= AppVersion.A) {
+                if (app.sendBackFormat === 'unwrap_json') {
+                    await https.post(app.endpoint, message.payload, {headers});
+                } else {
+                    // This is the old default path. It can be removed when we have no more un-versioned apps and
+                    // no more un-versioned messages AND if no one uses the payload_field type anymore AND can't
+                    // create apps/messages with that field type.
+                    await https.post(app.endpoint, {payload: message.payload}, {headers});
+                }
+            } else  {
+                // This is the old default path which can be removed once we have no more un-versioned documents.
+                await https.post(app.endpoint, {payload: message.payload}, {headers});
+            }
         } else {
             console.error('Unhandled app type', app.type);
             throw Error('Unhandled app type.');
@@ -186,6 +207,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                     appId: message.appId,
                     timestamp: released.toISOString(),
                     data: {status, data},
+                    version: MessageLogVersion.A,
                 };
                 await writeMessageLog(entry);
             } else {
