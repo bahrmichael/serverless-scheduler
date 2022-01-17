@@ -4,7 +4,7 @@ import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
-import {App} from "../../types";
+import {App, AppVersion} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
@@ -55,6 +55,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         endpoint,
         httpAuthorization,
         usagePlanId,
+        version: AppVersion.A
     };
 
     await ddb.put({

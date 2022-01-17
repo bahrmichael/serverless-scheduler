@@ -20,6 +20,12 @@ export interface App {
     // todo: move this to dedicated table/schema
     apiKey?: string;
     httpAuthorization?: HttpAuthorization;
+    version?: AppVersion;
+    sendBackFormat?: 'payload_field' | 'unwrap_json';
+}
+
+export enum AppVersion {
+    A = '2022_01_07'
 }
 
 export enum IntegrationType {
@@ -60,7 +66,11 @@ export interface Message {
     // httpAuthorization?: HttpAuthorization;
 
     errorCount?: number;
+    version?: MessageVersion;
+}
 
+export enum MessageVersion {
+    A = '2022_01_07'
 }
 
 export interface MessageLog {
@@ -69,6 +79,15 @@ export interface MessageLog {
     messageId: string;
     timestamp: string;
     data: {status: number, data: string};
+    version?: MessageLogVersion;
+}
+
+export enum MessageLogVersion {
+    A = '2022_01_07'
+}
+
+export enum ApiKeyRecordVersion {
+    A = '2022_01_07'
 }
 
 export interface ApiKeyRecord {
@@ -83,4 +102,5 @@ export interface ApiKeyRecord {
     type: 'API_KEY' | 'ACCESS_TOKEN';
     usagePlanId?: string;
     appId?: string;
+    version?: ApiKeyRecordVersion;
 }
