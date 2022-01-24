@@ -36,7 +36,7 @@ export default {
             Condition: {
                 StringNotLike: {
                     "aws:userid": [
-                        "999658689398", "710154449298"
+                        { "Ref" : "AWS::AccountId" }
                     ]
                 }
             }
