@@ -45,7 +45,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     app.name = name ?? app.name;
     app.description = description ?? app.description;
-    app.endpoint = endpoint ?? app.description;
+    app.endpoint = endpoint ?? app.endpoint;
     // only update authorization if it was previously enabled
     // this is a dirty hack until the UI is able to enable authorization later on
     if (httpAuthorization && app.httpAuthorization?.headerValue) {
