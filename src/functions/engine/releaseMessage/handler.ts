@@ -233,8 +233,15 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                 };
                 await writeMessageLog(entry);
             } else {
-                // todo: add an error log for sqs
-                console.log('Not writing error data because of unexpected format.', e);
+                const entry: MessageLog = {
+                    messageId: message.messageId,
+                    owner: message.owner,
+                    appId: message.appId,
+                    timestamp: released.toISOString(),
+                    data: {status: 400, data: e.message},
+                    version: MessageLogVersion.A,
+                };
+                await writeMessageLog(entry);
             }
         } catch (e) {
             console.error('Failed to write error logs', e);
