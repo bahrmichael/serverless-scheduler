@@ -163,7 +163,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
         metrics.putMetric("Released", 1, "Count");
         metrics.setProperty("Integration", app.type);
 
-        console.log('message_released', {messageId: message.messageId, appId: message.appId, owner: message.owner});
+        console.log('message_released', {messageId: message.messageId, appId: message.appId, owner: message.owner, type: app.type});
 
         await setReleased(message, released);
 
@@ -233,6 +233,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                 };
                 await writeMessageLog(entry);
             } else {
+                // todo: add an error log for sqs
                 console.log('Not writing error data because of unexpected format.', e);
             }
         } catch (e) {
