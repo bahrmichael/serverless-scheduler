@@ -30,6 +30,7 @@ export enum AppVersion {
 
 export enum IntegrationType {
     'REST' = 'REST',
+    'SQS' = 'SQS',
 }
 
 export enum MessageStatus {

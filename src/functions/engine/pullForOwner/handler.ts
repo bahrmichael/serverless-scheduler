@@ -1,7 +1,7 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import * as SQS from 'aws-sdk/clients/sqs';
-import {App, Message, MessageStatus} from "../../types";
+import {App, IntegrationType, Message, MessageStatus} from "../../types";
 import {calculateDelay} from "../../util";
 import {metricScope} from "aws-embedded-metrics";
 
@@ -44,7 +44,7 @@ export const main = metricScope(metrics => async (app: App) => {
     const promises: Promise<void>[] = [];
     for (const message of messages) {
         // todo: chunk into 10 message chunks // BUT WHY? Because of SQS batch size?
-        promises.push(processMessage([message], app.owner));
+        promises.push(processMessage([message], app.owner, app.type !== IntegrationType.SQS));
     }
     console.log('Awaiting requests', {owner: app.owner, app: app.id, count: promises.length});
     await Promise.all(promises);
@@ -55,23 +55,23 @@ export const main = metricScope(metrics => async (app: App) => {
      */
 });
 
-async function processMessage(messages: Message[], owner: string): Promise<void> {
+async function processMessage(messages: Message[], owner: string, mustDelay: boolean = false): Promise<void> {
     const entries: { Id: string, MessageBody: string, DelaySeconds: number }[] = messages.map((m) => {
         return {
             // todo: Remove this once all messages have a version field.
             Id: m.messageId.includes('#') ? m.messageId.split("#")[1] : m.messageId,
             MessageBody: JSON.stringify(m),
-            DelaySeconds: calculateDelay(m.sendAt),
+            DelaySeconds: mustDelay ? calculateDelay(m.sendAt) : 0,
         }
     });
-    console.log('queueing_messages', {owner, messages: messages.map(({messageId, appId}) => {
-        return {messageId, appId}
-    })});
-    await sqs.sendMessageBatch({
-        QueueUrl: QUEUE_URL,
-        Entries: entries,
-    }).promise();
+    console.log('queueing_messages', {
+        owner, messages: messages.map(({messageId, appId}) => {
+            return {messageId, appId}
+        })
+    });
 
+    // When we send messages without updating the status first, we may release them before being completing this operation.
+    // Therefore update status first, and then put them into the queue.
     for (const {appId, messageId} of messages) {
         await ddb.update({
             TableName: MESSAGES_TABLE,
@@ -89,4 +89,9 @@ async function processMessage(messages: Message[], owner: string): Promise<void>
         }).promise();
         console.log('mark_message_queued', {appId, messageId, owner});
     }
+
+    await sqs.sendMessageBatch({
+        QueueUrl: QUEUE_URL,
+        Entries: entries,
+    }).promise();
 }
