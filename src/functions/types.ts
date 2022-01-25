@@ -41,11 +41,6 @@ export enum MessageStatus {
     'ABORTED' = 'ABORTED',
 }
 
-export enum TargetType {
-    'HTTPS' = 'HTTPS',
-    // | 'SNS' | 'SQS'
-}
-
 export interface Message {
     owner: string;
     appId: string;
