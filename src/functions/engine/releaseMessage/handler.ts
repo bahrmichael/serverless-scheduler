@@ -151,6 +151,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                 default:
                     body = '' + message.payload;
             }
+            console.log('Releasing SQS message with delay:', delay);
             await sqs.sendMessage({
                 QueueUrl: app.endpoint,
                 MessageBody: body,
