@@ -46,6 +46,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     if (new Date(message.sendAt) < in10Minutes) {
         console.log('queue_short_term', {messageId: message.messageId, appId, owner});
 
+        // todo: if we have an SQS application, we can reduce the delay here
         await sqs.sendMessage({
             QueueUrl: QUEUE_URL,
             MessageBody: JSON.stringify(message),

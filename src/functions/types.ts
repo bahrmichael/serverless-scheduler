@@ -30,6 +30,7 @@ export enum AppVersion {
 
 export enum IntegrationType {
     'REST' = 'REST',
+    'SQS' = 'SQS',
 }
 
 export enum MessageStatus {
@@ -38,11 +39,6 @@ export enum MessageStatus {
     'SENT' = 'SENT',
     'FAILED' = 'FAILED',
     'ABORTED' = 'ABORTED',
-}
-
-export enum TargetType {
-    'HTTPS' = 'HTTPS',
-    // | 'SNS' | 'SQS'
 }
 
 export interface Message {

@@ -14,7 +14,10 @@ import {SQSEvent} from "aws-lambda";
 import axios from 'axios';
 import {metricScope} from "aws-embedded-metrics";
 import axiosRetry from 'axios-retry';
+import * as SQS from "aws-sdk/clients/sqs";
+import {calculateDelay} from "../../util";
 
+const sqs = new SQS();
 const ddb = new DynamoDB.DocumentClient();
 const https = axios.create({
     timeout: 2_000,
@@ -111,7 +114,8 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
     console.log('releasing_message', {messageId: message.messageId, appId: message.appId});
 
     const released = new Date();
-    const releaseDelay = released.getTime() - new Date(message.sendAt).getTime();
+    const targetRelease = new Date(message.sendAt).getTime();
+    const releaseDelay = released.getTime() - targetRelease;
 
     try {
         if (app.type === IntegrationType.REST) {
@@ -130,10 +134,29 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                     // create apps/messages with that field type.
                     await https.post(app.endpoint, {payload: message.payload}, {headers});
                 }
-            } else  {
+            } else {
                 // This is the old default path which can be removed once we have no more un-versioned documents.
                 await https.post(app.endpoint, {payload: message.payload}, {headers});
             }
+        } else if (app.type === IntegrationType.SQS) {
+            const delay = calculateDelay(message.sendAt);
+            let body;
+            switch (typeof message.payload) {
+                case 'object':
+                    body = JSON.stringify(message.payload);
+                    break;
+                case 'string':
+                    body = message.payload;
+                    break;
+                default:
+                    body = '' + message.payload;
+            }
+            console.log('Releasing SQS message with delay:', delay);
+            await sqs.sendMessage({
+                QueueUrl: app.endpoint,
+                MessageBody: body,
+                DelaySeconds: delay,
+            }).promise();
         } else {
             console.error('Unhandled app type', app.type);
             throw Error('Unhandled app type.');
@@ -141,7 +164,7 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
         metrics.putMetric("Released", 1, "Count");
         metrics.setProperty("Integration", app.type);
 
-        console.log('message_released', {messageId: message.messageId, appId: message.appId, owner: message.owner});
+        console.log('message_released', {messageId: message.messageId, appId: message.appId, owner: message.owner, type: app.type});
 
         await setReleased(message, released);
 
@@ -211,7 +234,15 @@ export const main = metricScope(metrics => async (event: SQSEvent) => {
                 };
                 await writeMessageLog(entry);
             } else {
-                console.log('Not writing error data because of unexpected format.', e);
+                const entry: MessageLog = {
+                    messageId: message.messageId,
+                    owner: message.owner,
+                    appId: message.appId,
+                    timestamp: released.toISOString(),
+                    data: {status: 400, data: e.message},
+                    version: MessageLogVersion.A,
+                };
+                await writeMessageLog(entry);
             }
         } catch (e) {
             console.error('Failed to write error logs', e);
