@@ -10,6 +10,12 @@ inputs:
   aws-account-id:
     description: AWS Account Id of target environment
     required: true
+  nextauth-secret:
+    description: Next auth secret used to encode/decode tokens
+    required: true
+  core-api-key:
+    description: API Key of the core api
+    required: true
 
 runs:
   using: 'composite'

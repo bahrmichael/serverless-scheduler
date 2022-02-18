@@ -4,8 +4,8 @@ export default {
     API_KEY_TABLE: {Ref: 'ApiKeyTable'},
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
     APPS_TABLE: {Ref: 'ApplicationsTable'},
-    NEXTAUTH_SECRET: '',
-    CORE_API_KEY: ''
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    CORE_API_KEY: process.env.CORE_API_KEY,
   },
   iamRoleStatements: [
     {
