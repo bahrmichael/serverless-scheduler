@@ -3,6 +3,17 @@ export default {
   events: [{
     http: {
       method: 'GET',
+      path: '/messages',
+      authorizer: {
+        name: 'authorizer',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
+      private: true,
+    }
+  }, {
+    http: {
+      method: 'GET',
       path: '/applications/{appId}/messages',
       authorizer: {
         name: 'authorizer',

@@ -3,10 +3,11 @@ import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {metricScope} from "aws-embedded-metrics";
 import {ApiKeyRecord} from "../../types";
 import {APIGatewayAuthorizerEvent} from "aws-lambda/trigger/api-gateway-authorizer";
+import {decode} from 'next-auth/jwt';
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE} = process.env;
+const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET, CORE_API_KEY} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEvent) => {
 
@@ -27,18 +28,22 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         throw Error(`Unhandled authorizer event type: ${event.type}`);
     }
 
-    metrics.setProperty("Path", event.path);
-    metrics.setProperty("Resource", event.pathParameters);
+    const {path, pathParameters, methodArn, headers} = event;
+
+    metrics.setProperty("Path", path);
+    metrics.setProperty("Resource", pathParameters);
     console.log({authorizationToken});
 
     if (!authorizationToken) {
         metrics.putMetric("AccessDenied", 1, "Count");
-        return generatePolicy('user', 'Deny', event.methodArn);
+        return generatePolicy('user', 'Deny', methodArn);
     }
 
     let appId;
     let apiKey;
     let owner;
+    let messageId;
+
     if (authorizationToken.startsWith('Basic')) {
         console.log('Auth:Basic');
         const data = authorizationToken.split(' ')[1];
@@ -53,28 +58,79 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             Key: {pk: id, apiKey: publicApiKey},
         }).promise()).Item as ApiKeyRecord;
 
-        if (!apiKeyRecord?.active || ['/access-token'].includes(event.path)) {
+        if (!apiKeyRecord?.active || ['/access-token'].includes(path)) {
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', event.methodArn);
+            return generatePolicy('user', 'Deny', methodArn);
         }
 
         owner = apiKeyRecord.owner;
         apiKey = apiKeyRecord.apigwApiKeyValue;
         appId = apiKeyRecord.appId;
-    } else {
-        console.log('Auth:ApiGwToken');
-        apiKey = authorizationToken;
-        owner = event.headers.owner;
-        appId = event.headers.appId;
-    }
 
-    // todo: authorize that an app/message actually belongs to the owner. better here than in each function individually.
+        // todo: when the client calls ListApps then this won't work, because there's no single appId
+
+        const appRes = await ddb.get({
+            TableName: APPS_TABLE,
+            Key: {owner, sk: `app#${appId}`}
+        }).promise();
+        if (!appRes?.Item) {
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
+
+        if (pathParameters.messageId) {
+            const messageRes = await ddb.get({
+                TableName: MESSAGES_TABLE,
+                Key: {appId, messageId: pathParameters.messageId}
+            }).promise();
+            if (messageRes?.Item?.owner !== owner) {
+                metrics.putMetric("AccessDenied", 1, "Count");
+                return generatePolicy('user', 'Deny', methodArn);
+            }
+            messageId = messageRes.Item.messageId;
+        }
+
+    } else if (authorizationToken.startsWith('Bearer')) {
+        console.log('Auth:Bearer');
+        const token = authorizationToken.split(' ')[1];
+        const {email: owner} = await decode({token, secret: NEXTAUTH_SECRET});
+
+        console.log('Auth:ApiGwToken');
+        apiKey = CORE_API_KEY;
+        // todo: this is insecure! if a client gets to pass their token in directly, they can manipulate data for everyone else
+        appId = event.headers.appId;
+
+        const appRes = await ddb.get({
+            TableName: APPS_TABLE,
+            Key: {owner, sk: `app#${appId}`}
+        }).promise();
+        if (!appRes?.Item) {
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
+
+        if (pathParameters.messageId) {
+            const messageRes = await ddb.get({
+                TableName: MESSAGES_TABLE,
+                Key: {appId, messageId: pathParameters.messageId}
+            }).promise();
+            if (messageRes?.Item?.owner !== owner) {
+                metrics.putMetric("AccessDenied", 1, "Count");
+                return generatePolicy('user', 'Deny', methodArn);
+            }
+            messageId = messageRes.Item.messageId;
+        }
+    } else {
+        console.log('Unhandled auth path', headers);
+        metrics.putMetric("AccessDenied", 1, "Count");
+        return generatePolicy('user', 'Deny', methodArn);
+    }
 
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
 
     metrics.putMetric("AccessGranted", 1, "Count");
-    return generatePolicy('user', 'Allow', event.methodArn, apiKey, {owner, appId});
+    return generatePolicy('user', 'Allow', methodArn, apiKey, {owner, appId, messageId});
 });
 
 // Help function to generate an IAM policy

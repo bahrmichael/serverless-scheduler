@@ -3,6 +3,17 @@ export default {
   events: [{
     http: {
       method: 'PUT',
+      path: '/messages/{messageId}/redrive',
+      authorizer: {
+        name: 'authorizer',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
+      private: true,
+    }
+  }, {
+    http: {
+      method: 'PUT',
       path: '/applications/{appId}/messages/{messageId}/redrive',
       authorizer: {
         name: 'authorizer',

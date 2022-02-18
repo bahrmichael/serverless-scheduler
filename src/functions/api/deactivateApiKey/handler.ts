@@ -13,7 +13,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const {owner} = requestContext.authorizer;
     const {appId, apiKeyId} = pathParameters;
 
-
     console.log('Loading api keys', {appId, apiKeyId});
 
     const items = (await ddb.query({

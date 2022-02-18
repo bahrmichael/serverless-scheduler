@@ -14,7 +14,6 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const {owner} = requestContext.authorizer;
     const {appId} = pathParameters;
 
-
     const app: App = (await ddb.get({
         TableName: APPLICATIONS_TABLE,
         Key: {
@@ -32,12 +31,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const mappedApp = {
         name: app.name,
-        description: app.description,
         id: app.id,
+        description: app.description,
         created: app.created,
         endpoint: app.endpoint,
         type: app.type,
         httpAuthorization,
+        sendBackFormat: app.sendBackFormat,
     }
 
     metrics.setNamespace("DEV/ServerlessScheduler/GetApp");

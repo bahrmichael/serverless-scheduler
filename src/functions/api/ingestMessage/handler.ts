@@ -34,6 +34,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             body: 'missing_payload',
         };
     }
+    if (!message.sendAt) {
+        return {
+            statusCode: 400,
+            body: 'missing_sendAt',
+        };
+    }
 
     message.owner = owner;
     message.appId = appId;

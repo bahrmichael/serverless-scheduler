@@ -10,9 +10,8 @@ const {MESSAGES_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {pathParameters, queryStringParameters, requestContext} = event;
-    const {owner} = requestContext.authorizer;
-    const {appId} = pathParameters;
+    const {queryStringParameters, requestContext} = event;
+    const {owner, appId} = requestContext.authorizer;
 
     let ExclusiveStartKey = undefined;
     if (queryStringParameters?.startFrom) {
@@ -37,11 +36,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         ExclusiveStartKey,
     }).promise()).Items as Message[] ?? [];
 
-    const mappedMessages = messages.map(({messageId, sendAt, status}) => {
+    const mappedMessages = messages.map(({messageId, sendAt, status, created}) => {
         return {
             appId,
             messageId,
             sendAt,
+            created,
             status,
         };
     });
