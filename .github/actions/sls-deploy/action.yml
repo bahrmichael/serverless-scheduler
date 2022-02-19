@@ -30,4 +30,6 @@ runs:
         export AWS_SESSION_TOKEN=`echo $CREDS | jq -r '.Credentials.SessionToken'`
         export STAGE=${{inputs.stage}}
         export SLS_DEBUG="*"
+        export CORE_API_KEY=${{inputs.core-api-key}}
+        export NEXTAUTH_SECRET=${{inputs.nextauth-secret}}
         npm run deploy -- --conceal
