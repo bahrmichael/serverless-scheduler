@@ -133,7 +133,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         console.log({cookies});
         const token = cookies[`next-auth.session-token`];
         console.log({token});
-        const decoded = decode({token, secret: NEXTAUTH_SECRET});
+        const decoded = await decode({token, secret: NEXTAUTH_SECRET});
         console.log({decoded});
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', methodArn);
