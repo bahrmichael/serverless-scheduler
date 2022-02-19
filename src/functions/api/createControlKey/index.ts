@@ -37,4 +37,5 @@ export default {
   tags: {
     function: 'createControlKey',
   },
+  timeout: 10,
 }
