@@ -122,6 +122,11 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         }
     } else {
         console.log('Unhandled auth path', headers);
+        const s = headers.cookie.split('=');
+        const l = s[s.length - 1];
+        console.log({l});
+        const decoded = decode({token: l, secret: NEXTAUTH_SECRET});
+        console.log({decoded});
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', methodArn);
     }
