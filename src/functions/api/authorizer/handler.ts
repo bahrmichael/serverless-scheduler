@@ -7,7 +7,7 @@ import {decode} from 'next-auth/jwt';
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET} = process.env;
+const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET, CORE_API_KEY} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEvent) => {
 
@@ -162,6 +162,8 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
                 }
             }
         }
+
+        apiKey = CORE_API_KEY;
     } else {
         console.log('Unhandled auth path', headers);
         metrics.putMetric("AccessDenied", 1, "Count");
