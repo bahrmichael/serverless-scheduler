@@ -7,7 +7,7 @@ import {decode} from 'next-auth/jwt';
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET, CORE_API_KEY} = process.env;
+const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEvent) => {
 
@@ -90,42 +90,41 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             messageId = messageRes.Item.messageId;
         }
 
-    } else if (authorizationToken.startsWith('Bearer')) {
-        console.log('Auth:Bearer');
-        const token = authorizationToken.split(' ')[1];
-        const {email: owner} = await decode({token, secret: NEXTAUTH_SECRET});
+    // } else if (authorizationToken.startsWith('Bearer')) {
+    //     console.log('Auth:Bearer');
+    //     const token = authorizationToken.split(' ')[1];
+    //     const {email: owner} = await decode({token, secret: NEXTAUTH_SECRET});
+    //
+    //     console.log('Auth:ApiGwToken');
+    //     apiKey = CORE_API_KEY;
+    //     // todo: this is insecure! if a client gets to pass their token in directly, they can manipulate data for everyone else
+    //     appId = event.headers.appId;
+    //
+    //     const appRes = await ddb.get({
+    //         TableName: APPS_TABLE,
+    //         Key: {owner, sk: `app#${appId}`}
+    //     }).promise();
+    //     if (!appRes?.Item) {
+    //         metrics.putMetric("AccessDenied", 1, "Count");
+    //         return generatePolicy('user', 'Deny', methodArn);
+    //     }
+    //
+    //     if (pathParameters.messageId) {
+    //         const messageRes = await ddb.get({
+    //             TableName: MESSAGES_TABLE,
+    //             Key: {appId, messageId: pathParameters.messageId}
+    //         }).promise();
+    //         if (messageRes?.Item?.owner !== owner) {
+    //             metrics.putMetric("AccessDenied", 1, "Count");
+    //             return generatePolicy('user', 'Deny', methodArn);
+    //         }
+    //         messageId = messageRes.Item.messageId;
+    //     }
+    } else if (authorizationToken === 'frontendCookie') {
 
-        console.log('Auth:ApiGwToken');
-        apiKey = CORE_API_KEY;
-        // todo: this is insecure! if a client gets to pass their token in directly, they can manipulate data for everyone else
-        appId = event.headers.appId;
-
-        const appRes = await ddb.get({
-            TableName: APPS_TABLE,
-            Key: {owner, sk: `app#${appId}`}
-        }).promise();
-        if (!appRes?.Item) {
-            metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
-        }
-
-        if (pathParameters.messageId) {
-            const messageRes = await ddb.get({
-                TableName: MESSAGES_TABLE,
-                Key: {appId, messageId: pathParameters.messageId}
-            }).promise();
-            if (messageRes?.Item?.owner !== owner) {
-                metrics.putMetric("AccessDenied", 1, "Count");
-                return generatePolicy('user', 'Deny', methodArn);
-            }
-            messageId = messageRes.Item.messageId;
-        }
-    } else {
-        console.log('Unhandled auth path', headers);
         const cookies = new Map<string, string>();
         headers.cookie.split(';').forEach((c) => {
             const splitCookie = c.trim().split('=');
-            console.log({splitCookie});
             cookies.set(splitCookie[0], splitCookie[1]);
         })
         console.log({cookies});
@@ -133,6 +132,36 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         console.log({token});
         const decoded = await decode({token, secret: NEXTAUTH_SECRET});
         console.log({decoded});
+
+        console.log(event.pathParameters);
+
+        owner = decoded.email;
+        appId = event.pathParameters.appId;
+        messageId = event.pathParameters.messageId;
+
+        if (appId) {
+            const appRes = await ddb.get({
+                TableName: APPS_TABLE,
+                Key: {owner, sk: `app#${appId}`}
+            }).promise();
+            if (!appRes?.Item) {
+                metrics.putMetric("AccessDenied", 1, "Count");
+                return generatePolicy('user', 'Deny', methodArn);
+            }
+
+            if (messageId) {
+                const messageRes = await ddb.get({
+                    TableName: MESSAGES_TABLE,
+                    Key: {appId, messageId}
+                }).promise();
+                if (messageRes?.Item?.owner !== owner) {
+                    metrics.putMetric("AccessDenied", 1, "Count");
+                    return generatePolicy('user', 'Deny', methodArn);
+                }
+            }
+        }
+    } else {
+        console.log('Unhandled auth path', headers);
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', methodArn);
     }
