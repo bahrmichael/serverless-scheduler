@@ -122,10 +122,18 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         }
     } else {
         console.log('Unhandled auth path', headers);
-        const s = headers.cookie.split('=');
-        const l = s[s.length - 1];
-        console.log({l});
-        const decoded = decode({token: l, secret: NEXTAUTH_SECRET});
+        const cookies = headers.cookie.split(';').map((c) => {
+            const splitCookie = c.trim().split('=');
+            console.log({splitCookie});
+            return {
+                key: splitCookie[0],
+                value: splitCookie[1],
+            }
+        })
+        console.log({cookies});
+        const token = cookies[`next-auth.session-token`];
+        console.log({token});
+        const decoded = decode({token, secret: NEXTAUTH_SECRET});
         console.log({decoded});
         metrics.putMetric("AccessDenied", 1, "Count");
         return generatePolicy('user', 'Deny', methodArn);
