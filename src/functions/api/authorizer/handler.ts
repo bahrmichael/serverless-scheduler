@@ -122,16 +122,14 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         }
     } else {
         console.log('Unhandled auth path', headers);
-        const cookies = headers.cookie.split(';').map((c) => {
+        const cookies = new Map<string, string>();
+        headers.cookie.split(';').forEach((c) => {
             const splitCookie = c.trim().split('=');
             console.log({splitCookie});
-            return {
-                key: splitCookie[0],
-                value: splitCookie[1],
-            }
+            cookies.set(splitCookie[0], splitCookie[1]);
         })
         console.log({cookies});
-        const token = cookies[`next-auth.session-token`];
+        const token = cookies.get(`next-auth.session-token`);
         console.log({token});
         const decoded = await decode({token, secret: NEXTAUTH_SECRET});
         console.log({decoded});
