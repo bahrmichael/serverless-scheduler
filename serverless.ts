@@ -2,12 +2,12 @@ import type {AWS} from '@serverless/typescript';
 
 import {
     abortMessage,
-    authorizer, createAccessToken,
+    authorizer, createControlKey,
     createApiKey,
-    createApp, deactivateAccessToken,
+    createApp, deactivateControlKey,
     deactivateApiKey, deleteApp,
     getApp, getMessage,
-    ingestMessage, listAccessTokens,
+    ingestMessage, listControlKeys,
     listApiKeys,
     listApps, listMessageLogs,
     listMessages,
@@ -67,9 +67,9 @@ const serverlessConfiguration: AWS = {
         deactivateApiKey,
         listMessages,
         meterIngestRelease,
-        createAccessToken,
-        listAccessTokens,
-        deactivateAccessToken,
+        createControlKey,
+        listControlKeys,
+        deactivateControlKey,
         listMessageLogs,
         getMessage,
         abortMessage,
@@ -153,6 +153,49 @@ const serverlessConfiguration: AWS = {
                     Tags: [{
                         Key: 'table',
                         Value: 'Applications'
+                    }]
+                }
+            },
+            ControlKeyTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'pk',
+                        KeyType: 'HASH'
+                    }],
+                    GlobalSecondaryIndexes: [{
+                        IndexName: 'idIndex',
+                        KeySchema: [{
+                            AttributeName: 'id',
+                            KeyType: 'HASH'
+                        }],
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        },
+                    }, {
+                        IndexName: 'ownerIndex',
+                        KeySchema: [{
+                            AttributeName: 'owner',
+                            KeyType: 'HASH'
+                        }],
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        },
+                    }],
+                    AttributeDefinitions: [{
+                        AttributeName: 'pk',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'id',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'owner',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'table',
+                        Value: 'ControlKeys'
                     }]
                 }
             },

@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'PUT',
-      path: '/access-tokens/{accessTokenId}/deactivate',
+      path: '/control-keys/{controlKeyId}/deactivate',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -13,21 +13,21 @@ export default {
     }
   }],
   environment: {
-    API_KEY_TABLE: {Ref: 'ApiKeyTable'},
+    CONTROL_KEY_TABLE: {Ref: 'ControlKeyTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:UpdateItem'],
-      Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
+      Resource: {'Fn::GetAtt': ['ControlKeyTable', 'Arn']}
     },
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query'],
-      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['ApiKeyTable', 'Arn' ] }, 'index', 'apiKeyIdIndex' ]]}
+      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['ControlKeyTable', 'Arn' ] }, 'index', 'idIndex' ]]}
     },
   ],
   tags: {
-    function: 'deactivateAccessToken',
+    function: 'deactivateControlKey',
   },
 }

@@ -1,13 +1,14 @@
 import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {metricScope} from "aws-embedded-metrics";
-import {ApiKeyRecord} from "../../types";
+import {ApiKeyRecord, ControlKeyRecord} from "../../types";
 import {APIGatewayAuthorizerEvent} from "aws-lambda/trigger/api-gateway-authorizer";
 import {decode} from 'next-auth/jwt';
+import {match} from 'node-match-path';
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET, CORE_API_KEY} = process.env;
+const {API_KEY_TABLE, CONTROL_KEY_TABLE, APPS_TABLE, MESSAGES_TABLE, NEXTAUTH_SECRET, CORE_API_KEY} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEvent) => {
 
@@ -46,11 +47,43 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
 
     if (authorizationToken.startsWith('Basic')) {
         console.log('Auth:Basic');
+
+        const allowedRoutes = [{
+            method: 'get',
+            path: '/messages'
+        }, {
+            method: 'get',
+            path: '/messages/:messageId'
+        }, {
+            method: 'get',
+            path: '/messages/:messageId/logs'
+        }, {
+            method: 'put',
+            path: '/messages/:messageId/abort'
+        }, {
+            method: 'put',
+            path: '/messages/:messageId/redrive'
+        }];
+
+        let isAllowed = false;
+        for (const allowedRoute of allowedRoutes) {
+            if (allowedRoute.method === event.httpMethod.toLowerCase() && match(event.path, allowedRoute.path)) {
+                // is allowed to pass
+                isAllowed = true;
+                break;
+            }
+        }
+        if (!isAllowed) {
+            // if no match was found, we deny the request
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
+
         const data = authorizationToken.split(' ')[1];
         const buff = Buffer.from(data, 'base64');
         const decoded = buff.toString('ascii');
         const parts = decoded.split(':');
-        const id  = parts[0];
+        const id = parts[0];
         const publicApiKey = parts[1];
 
         const apiKeyRecord: ApiKeyRecord = (await ddb.get({
@@ -89,53 +122,159 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             }
             messageId = messageRes.Item.messageId;
         }
+    } else if (authorizationToken.startsWith('Token')) {
+        console.log('Auth:Token');
 
-    // } else if (authorizationToken.startsWith('Bearer')) {
-    //     console.log('Auth:Bearer');
-    //     const token = authorizationToken.split(' ')[1];
-    //     const {email: owner} = await decode({token, secret: NEXTAUTH_SECRET});
-    //
-    //     console.log('Auth:ApiGwToken');
-    //     apiKey = CORE_API_KEY;
-    //     // todo: this is insecure! if a client gets to pass their token in directly, they can manipulate data for everyone else
-    //     appId = event.headers.appId;
-    //
-    //     const appRes = await ddb.get({
-    //         TableName: APPS_TABLE,
-    //         Key: {owner, sk: `app#${appId}`}
-    //     }).promise();
-    //     if (!appRes?.Item) {
-    //         metrics.putMetric("AccessDenied", 1, "Count");
-    //         return generatePolicy('user', 'Deny', methodArn);
-    //     }
-    //
-    //     if (pathParameters.messageId) {
-    //         const messageRes = await ddb.get({
-    //             TableName: MESSAGES_TABLE,
-    //             Key: {appId, messageId: pathParameters.messageId}
-    //         }).promise();
-    //         if (messageRes?.Item?.owner !== owner) {
-    //             metrics.putMetric("AccessDenied", 1, "Count");
-    //             return generatePolicy('user', 'Deny', methodArn);
-    //         }
-    //         messageId = messageRes.Item.messageId;
-    //     }
+        const allowedRoutes = [{
+            method: 'post',
+            path: '/applications'
+        }, {
+            method: 'get',
+            path: '/applications'
+        }, {
+            method: 'get',
+            path: '/applications/:appId'
+        }, {
+            method: 'put',
+            path: '/applications/:appId'
+        }, {
+            method: 'delete',
+            path: '/applications/:appId'
+        }, {
+            method: 'post',
+            path: '/applications/:appId/data-keys'
+        }, {
+            method: 'get',
+            path: '/applications/:appId/data-keys'
+        }, {
+            method: 'put',
+            path: '/applications/:appId/data-keys/:dataKeyId/deactivate'
+        }, {
+            method: 'post',
+            path: '/control-keys'
+        }, {
+            method: 'get',
+            path: '/control-keys'
+        }, {
+            method: 'put',
+            path: '/control-keys/:controlKeyId/deactivate'
+        }];
+
+        let isAllowed = false;
+        for (const allowedRoute of allowedRoutes) {
+            if (allowedRoute.method === event.httpMethod.toLowerCase() && match(event.path, allowedRoute.path)) {
+                // is allowed to pass
+                isAllowed = true;
+                break;
+            }
+        }
+        if (!isAllowed) {
+            // if no match was found, we deny the request
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
+
+        const publicControlKey = authorizationToken.split(' ')[1];
+
+        const controlKeyRecord: ControlKeyRecord = (await ddb.get({
+            TableName: CONTROL_KEY_TABLE,
+            Key: {pk: publicControlKey},
+        }).promise()).Item as ControlKeyRecord;
+
+        if (!controlKeyRecord?.active /* todo: block routes */) {
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
+
+        owner = controlKeyRecord.owner;
+        apiKey = controlKeyRecord.apigwApiKeyValue;
+
+        if (pathParameters.appId) {
+            const appRes = await ddb.get({
+                TableName: APPS_TABLE,
+                Key: {owner, sk: `app#${pathParameters.appId}`}
+            }).promise();
+            if (!appRes?.Item) {
+                metrics.putMetric("AccessDenied", 1, "Count");
+                return generatePolicy('user', 'Deny', methodArn);
+            }
+            appId = appRes.Item.appId;
+        }
     } else if (authorizationToken === 'frontendCookie') {
 
         console.log('Auth:Cookie');
+
+        const allowedRoutes = [{
+            method: 'get',
+            path: '/messages'
+        }, {
+            method: 'get',
+            path: '/messages/:messageId'
+        }, {
+            method: 'get',
+            path: '/messages/:messageId/logs'
+        }, {
+            method: 'put',
+            path: '/messages/:messageId/abort'
+        }, {
+            method: 'put',
+            path: '/messages/:messageId/redrive'
+        }, {
+            method: 'post',
+            path: '/applications'
+        }, {
+            method: 'get',
+            path: '/applications'
+        }, {
+            method: 'get',
+            path: '/applications/:appId'
+        }, {
+            method: 'put',
+            path: '/applications/:appId'
+        }, {
+            method: 'delete',
+            path: '/applications/:appId'
+        }, {
+            method: 'post',
+            path: '/applications/:appId/data-keys'
+        }, {
+            method: 'get',
+            path: '/applications/:appId/data-keys'
+        }, {
+            method: 'put',
+            path: '/applications/:appId/data-keys/:dataKeyId/deactivate'
+        }, {
+            method: 'post',
+            path: '/control-keys'
+        }, {
+            method: 'get',
+            path: '/control-keys'
+        }, {
+            method: 'put',
+            path: '/control-keys/:controlKeyId/deactivate'
+        }];
+
+        let isAllowed = false;
+        for (const allowedRoute of allowedRoutes) {
+            if (allowedRoute.method === event.httpMethod.toLowerCase() && match(event.path, allowedRoute.path)) {
+                // is allowed to pass
+                isAllowed = true;
+                break;
+            }
+        }
+        if (!isAllowed) {
+            // if no match was found, we deny the request
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn);
+        }
 
         const cookies = new Map<string, string>();
         headers.cookie.split(';').forEach((c) => {
             const splitCookie = c.trim().split('=');
             cookies.set(splitCookie[0], splitCookie[1]);
         })
-        console.log({cookies});
         const token = cookies.get(`next-auth.session-token`);
-        console.log({token});
         const decoded = await decode({token, secret: NEXTAUTH_SECRET});
-        console.log({decoded});
-
-        console.log(event.pathParameters);
 
         owner = decoded.email;
         appId = event.pathParameters.appId;

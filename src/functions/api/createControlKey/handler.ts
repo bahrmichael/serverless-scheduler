@@ -4,19 +4,19 @@ import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
-import {ApiKeyRecord, ApiKeyRecordVersion} from "../../types";
+import {ControlKeyRecord, ControlKeyRecordVersion} from "../../types";
 import {generateToken} from "../../crypto";
 
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
 
-const {API_KEY_TABLE, API_ID, STAGE} = process.env;
+const {CONTROL_KEY_TABLE, API_ID, STAGE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const {owner} = event.requestContext.authorizer;
 
-    const accessToken = await generateToken();
+    const controlKey = await generateToken();
     const id = uuid();
 
     const usagePlanId = (await apigw.createUsagePlan({
@@ -55,30 +55,29 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         throw e;
     }
 
-    const apiKeyRecord: ApiKeyRecord = {
-        id,
-        pk: owner,
-        apiKey: accessToken,
+    const controlKeyRecord: ControlKeyRecord = {
+        pk: controlKey,
+        controlKey,
         owner,
+        id,
         apigwApiKeyId: apigwApiKey.id,
         apigwApiKeyValue: apigwApiKey.value,
         active: true,
         created: new Date().toISOString(),
         usagePlanId,
-        type: 'ACCESS_TOKEN',
-        version: ApiKeyRecordVersion.A
+        version: ControlKeyRecordVersion.A
     };
 
     await ddb.put({
-        TableName: API_KEY_TABLE,
-        Item: apiKeyRecord
+        TableName: CONTROL_KEY_TABLE,
+        Item: controlKeyRecord
     }).promise();
 
-    metrics.setNamespace("DEV/ServerlessScheduler/CreateAccessToken");
+    metrics.setNamespace("DEV/ServerlessScheduler/CreateControlKey");
     metrics.setProperty("Owner", owner);
 
     return {
         statusCode: 200,
-        body: JSON.stringify({id, secret: accessToken}),
+        body: JSON.stringify({id, secret: controlKey}),
     }
 });

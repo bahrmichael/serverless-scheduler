@@ -5,30 +5,30 @@ import {metricScope} from "aws-embedded-metrics";
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE} = process.env;
+const {CONTROL_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const {pathParameters, requestContext} = event;
     const {owner} = requestContext.authorizer;
-    const {accessTokenId} = pathParameters;
+    const {controlKeyId} = pathParameters;
 
-    console.log('Loading access tokens', {accessTokenId});
+    console.log('Loading control keys', {controlKeyId});
 
     const items = (await ddb.query({
-        TableName: API_KEY_TABLE,
-        IndexName: 'apiKeyIdIndex',
+        TableName: CONTROL_KEY_TABLE,
+        IndexName: 'idIndex',
         KeyConditionExpression: '#id = :a',
         ExpressionAttributeNames: {
             '#id': 'id',
         },
         ExpressionAttributeValues: {
-            ':a': accessTokenId,
+            ':a': controlKeyId,
         },
         Limit: 1,
     }).promise()).Items;
 
-    console.log('Number of access tokens', {count: items.length, accessTokenId});
+    console.log('Number of control keys', {count: items.length, controlKeyId});
     if (items.length === 0) {
         return {
             statusCode: 404,
@@ -36,14 +36,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
-    const {active, apiKey: accessToken} = items[0];
+    const {active, pk: controlKey} = items[0];
 
     if (active) {
         await ddb.update({
-            TableName: API_KEY_TABLE,
+            TableName: CONTROL_KEY_TABLE,
             Key: {
-                pk: owner,
-                apiKey: accessToken,
+                pk: controlKey,
             },
             UpdateExpression: 'set #active = :a',
             ExpressionAttributeNames: {
@@ -55,7 +54,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }).promise();
     }
 
-    metrics.setNamespace("DEV/ServerlessScheduler/DeactivateAccessToken");
+    metrics.setNamespace("DEV/ServerlessScheduler/DeactivateControlKey");
     metrics.setProperty("Owner", owner);
 
     return {

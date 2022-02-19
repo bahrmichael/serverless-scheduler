@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'GET',
-      path: '/access-tokens',
+      path: '/control-keys',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -13,16 +13,16 @@ export default {
     }
   }],
   environment: {
-    API_KEY_TABLE: {Ref: 'ApiKeyTable'},
+    CONTROL_KEY_TABLE: {Ref: 'ControlKeyTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query'],
-      Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
+      Resource: {'Fn::GetAtt': ['ControlKeyTable', 'Arn']}
     },
   ],
   tags: {
-    function: 'listAccessTokens',
+    function: 'listControlKeys',
   },
 }

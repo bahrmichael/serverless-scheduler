@@ -100,3 +100,20 @@ export interface ApiKeyRecord {
     appId?: string;
     version?: ApiKeyRecordVersion;
 }
+
+export enum ControlKeyRecordVersion {
+    A = '2022_02_19'
+}
+
+export interface ControlKeyRecord {
+    pk: string;
+    controlKey: string;
+    id: string;
+    owner: string;
+    active: boolean;
+    created: string;
+    apigwApiKeyId: string;
+    apigwApiKeyValue: string;
+    version: ControlKeyRecordVersion;
+    usagePlanId?: string;
+}

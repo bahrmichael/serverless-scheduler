@@ -1,6 +1,7 @@
 export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   environment: {
+    CONTROL_KEY_TABLE: {Ref: 'ControlKeyTable'},
     API_KEY_TABLE: {Ref: 'ApiKeyTable'},
     MESSAGES_TABLE: {Ref: 'MessagesTable'},
     APPS_TABLE: {Ref: 'ApplicationsTable'},
@@ -8,6 +9,11 @@ export default {
     CORE_API_KEY: process.env.CORE_API_KEY,
   },
   iamRoleStatements: [
+    {
+      Effect: 'Allow',
+      Action: ['dynamodb:GetItem'],
+      Resource: { 'Fn::GetAtt': ['ControlKeyTable', 'Arn' ] },
+    },
     {
       Effect: 'Allow',
       Action: ['dynamodb:GetItem'],
