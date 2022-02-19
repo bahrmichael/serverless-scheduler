@@ -19,7 +19,7 @@ export default {
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query'],
-      Resource: {'Fn::GetAtt': ['ControlKeyTable', 'Arn']}
+      Resource: {'Fn::Join': [ '/', [{ 'Fn::GetAtt': ['ControlKeyTable', 'Arn' ] }, 'index', 'ownerIndex' ]]}
     },
   ],
   tags: {
