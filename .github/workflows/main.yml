@@ -47,5 +47,5 @@ jobs:
           service-folder: ${{ env.SERVICE_FOLDER }}
           stage: prod
           aws-account-id: ${{ env.PROD_ACCOUNT_ID }}
-          next-auth-secret: ${{ env.NEXTAUTH_SECRET }}
+          nextauth-secret: ${{ env.NEXTAUTH_SECRET }}
           core-api-key: ${{ env.CORE_API_KEY }}
