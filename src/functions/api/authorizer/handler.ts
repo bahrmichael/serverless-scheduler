@@ -122,6 +122,8 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
     //     }
     } else if (authorizationToken === 'frontendCookie') {
 
+        console.log('Auth:Cookie');
+
         const cookies = new Map<string, string>();
         headers.cookie.split(';').forEach((c) => {
             const splitCookie = c.trim().split('=');
