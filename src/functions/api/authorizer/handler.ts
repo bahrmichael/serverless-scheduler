@@ -291,7 +291,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             const splitCookie = c.trim().split('=');
             cookies.set(splitCookie[0], splitCookie[1]);
         })
-        const token = cookies.get(`next-auth.session-token`);
+        const token = cookies.get(`next-auth.session-token`) ?? cookies.get(`__Secure-next-auth.session-token`);
         const decoded = await decode({token, secret: NEXTAUTH_SECRET});
 
         owner = decoded.email;
