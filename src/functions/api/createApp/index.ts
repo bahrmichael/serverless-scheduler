@@ -37,4 +37,5 @@ export default {
   tags: {
     function: 'createApp',
   },
+  timeout: 10,
 }
