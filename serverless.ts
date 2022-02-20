@@ -37,7 +37,7 @@ const serverlessConfiguration: AWS = {
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
-            apiKeys: ["API_KEY"],
+            // apiKeys: ["API_KEY"],
             apiKeySourceType: 'AUTHORIZER'
         },
         environment: {
