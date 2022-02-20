@@ -2,13 +2,13 @@ import type {AWS} from '@serverless/typescript';
 
 import {
     abortMessage,
-    authorizer, createAccessToken,
-    createApiKey,
-    createApp, deactivateAccessToken,
-    deactivateApiKey, deleteApp,
+    authorizer, createControlKey,
+    createDataKey,
+    createApp, deactivateControlKey,
+    deactivateDataKey, deleteApp,
     getApp, getMessage,
-    ingestMessage, listAccessTokens,
-    listApiKeys,
+    ingestMessage, listControlKeys,
+    listDataKeys,
     listApps, listMessageLogs,
     listMessages,
     meterIngestRelease,
@@ -37,7 +37,7 @@ const serverlessConfiguration: AWS = {
         apiGateway: {
             minimumCompressionSize: 1024,
             shouldStartNameWithService: true,
-            apiKeys: ["API_KEY"],
+            // apiKeys: ["API_KEY"],
             apiKeySourceType: 'AUTHORIZER'
         },
         environment: {
@@ -62,14 +62,14 @@ const serverlessConfiguration: AWS = {
         createApp,
         deleteApp,
         updateApp,
-        createApiKey,
-        listApiKeys,
-        deactivateApiKey,
+        createDataKey,
+        listDataKeys,
+        deactivateDataKey,
         listMessages,
         meterIngestRelease,
-        createAccessToken,
-        listAccessTokens,
-        deactivateAccessToken,
+        createControlKey,
+        listControlKeys,
+        deactivateControlKey,
         listMessageLogs,
         getMessage,
         abortMessage,
@@ -153,6 +153,49 @@ const serverlessConfiguration: AWS = {
                     Tags: [{
                         Key: 'table',
                         Value: 'Applications'
+                    }]
+                }
+            },
+            ControlKeyTable: {
+                Type: 'AWS::DynamoDB::Table',
+                Properties: {
+                    BillingMode: 'PAY_PER_REQUEST',
+                    KeySchema: [{
+                        AttributeName: 'pk',
+                        KeyType: 'HASH'
+                    }],
+                    GlobalSecondaryIndexes: [{
+                        IndexName: 'idIndex',
+                        KeySchema: [{
+                            AttributeName: 'id',
+                            KeyType: 'HASH'
+                        }],
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        },
+                    }, {
+                        IndexName: 'ownerIndex',
+                        KeySchema: [{
+                            AttributeName: 'owner',
+                            KeyType: 'HASH'
+                        }],
+                        Projection: {
+                            ProjectionType: 'ALL'
+                        },
+                    }],
+                    AttributeDefinitions: [{
+                        AttributeName: 'pk',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'id',
+                        AttributeType: 'S'
+                    }, {
+                        AttributeName: 'owner',
+                        AttributeType: 'S'
+                    }],
+                    Tags: [{
+                        Key: 'table',
+                        Value: 'ControlKeys'
                     }]
                 }
             },

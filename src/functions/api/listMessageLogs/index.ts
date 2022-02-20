@@ -3,6 +3,17 @@ export default {
   events: [{
     http: {
       method: 'GET',
+      path: '/messages/{messageId}/logs',
+      authorizer: {
+        name: 'authorizer',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
+      private: true,
+    }
+  }, {
+    http: {
+      method: 'GET',
       path: '/applications/{appId}/messages/{messageId}/logs',
       authorizer: {
         name: 'authorizer',
@@ -14,18 +25,12 @@ export default {
   }],
   environment: {
     MESSAGE_LOGS_TABLE: {Ref: 'MessageLogsTable'},
-    APPLICATIONS_TABLE: {Ref: 'ApplicationsTable'},
   },
   iamRoleStatements: [
     {
       Effect: 'Allow',
       Action: ['dynamodb:Query'],
       Resource: {'Fn::GetAtt': ['MessageLogsTable', 'Arn']}
-    },
-    {
-      Effect: 'Allow',
-      Action: ['dynamodb:GetItem'],
-      Resource: {'Fn::GetAtt': ['ApplicationsTable', 'Arn']}
     },
   ],
   tags: {

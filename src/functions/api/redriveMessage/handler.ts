@@ -11,8 +11,8 @@ const {MESSAGES_TABLE, MESSAGE_LOGS_TABLE} = process.env;
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
     const {pathParameters, requestContext} = event;
-    const {owner} = requestContext.authorizer;
-    const {appId, messageId} = pathParameters;
+    const {owner, appId} = requestContext.authorizer;
+    const {messageId} = pathParameters;
 
     const message: Message = (await ddb.get({
         TableName: MESSAGES_TABLE,

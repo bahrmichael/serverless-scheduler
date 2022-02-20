@@ -21,6 +21,8 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: us-east-1
       DEV_ACCOUNT_ID: ${{ secrets.DEV_ACCOUNT_ID }}
+      NEXTAUTH_SECRET: ${{ secrets.DEV_NEXTAUTH_SECRET }}
+      CORE_API_KEY: ${{ secrets.DEV_CORE_API_KEY }}
 
     steps:
       - uses: actions/checkout@v2
@@ -46,3 +48,5 @@ jobs:
           service-folder: ${{ env.SERVICE_FOLDER }}
           stage: dev
           aws-account-id: ${{ env.DEV_ACCOUNT_ID }}
+          nextauth-secret: ${{ env.NEXTAUTH_SECRET }}
+          core-api-key: ${{ env.CORE_API_KEY }}

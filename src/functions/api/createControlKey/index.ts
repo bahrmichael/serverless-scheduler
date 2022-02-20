@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'POST',
-      path: '/access-tokens',
+      path: '/control-keys',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -13,7 +13,7 @@ export default {
     }
   }],
   environment: {
-    API_KEY_TABLE: {Ref: 'ApiKeyTable'},
+    CONTROL_KEY_TABLE: {Ref: 'ControlKeyTable'},
     API_ID: {Ref: 'ApiGatewayRestApi'},
     STAGE: '${env:STAGE, "dev"}',
   },
@@ -21,7 +21,7 @@ export default {
     {
       Effect: 'Allow',
       Action: ['dynamodb:PutItem'],
-      Resource: {'Fn::GetAtt': ['ApiKeyTable', 'Arn']}
+      Resource: {'Fn::GetAtt': ['ControlKeyTable', 'Arn']}
     },
     {
       Effect: 'Allow',
@@ -35,6 +35,7 @@ export default {
     },
   ],
   tags: {
-    function: 'createAccessToken',
+    function: 'createControlKey',
   },
+  timeout: 10,
 }

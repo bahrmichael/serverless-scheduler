@@ -24,10 +24,16 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     }).promise()).Items as App[] ?? [];
 
-    const mappedApps = apps.map(({name, id}) => {
+    const mappedApps = apps.map(({name, id, description, created, endpoint, type, httpAuthorization, sendBackFormat}) => {
         return {
             name,
             id,
+            description,
+            created,
+            endpoint,
+            type,
+            httpAuthorization,
+            sendBackFormat,
         };
     });
 

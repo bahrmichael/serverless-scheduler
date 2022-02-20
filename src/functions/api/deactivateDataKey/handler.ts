@@ -11,10 +11,9 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const {pathParameters, requestContext} = event;
     const {owner} = requestContext.authorizer;
-    const {appId, apiKeyId} = pathParameters;
+    const {appId, dataKeyId} = pathParameters;
 
-
-    console.log('Loading api keys', {appId, apiKeyId});
+    console.log('Loading data keys', {appId, dataKeyId});
 
     const items = (await ddb.query({
         TableName: API_KEY_TABLE,
@@ -24,12 +23,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             '#id': 'id',
         },
         ExpressionAttributeValues: {
-            ':a': apiKeyId
+            ':a': dataKeyId
         },
         Limit: 1,
     }).promise()).Items;
 
-    console.log('Number of api keys', {count: items.length, appId, apiKeyId});
+    console.log('Number of api keys', {count: items.length, appId, dataKeyId});
     if (items.length === 0) {
         return {
             statusCode: 404,

@@ -13,6 +13,19 @@ export default {
       },
       private: true,
     }
+  }, {
+    http: {
+      method: 'POST',
+      path: '/messages',
+      // We combine the authorizer and a private API. The authorizer yields the internal api key mapping to the
+      // one we vended out to the customer.
+      authorizer: {
+        name: 'authorizer',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
+      private: true,
+    }
   }],
   environment: {
     MESSAGES_TABLE: {Ref: 'MessagesTable'},

@@ -2,7 +2,7 @@ export default {
   handler: `${__dirname.split(process.cwd())[1].substring(1)}/handler.main`,
   events: [{
     http: {
-      method: 'PUT',
+      method: 'POST',
       path: '/applications',
       authorizer: {
         name: 'authorizer',
@@ -37,4 +37,5 @@ export default {
   tags: {
     function: 'createApp',
   },
+  timeout: 10,
 }

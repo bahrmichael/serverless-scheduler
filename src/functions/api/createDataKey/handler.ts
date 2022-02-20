@@ -4,49 +4,45 @@ import * as ApiGateway from 'aws-sdk/clients/apigateway';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
 import {v4 as uuid} from 'uuid';
-import {ApiKeyRecord, ApiKeyRecordVersion} from "../../types";
+import {ApiKeyRecord, ApiKeyRecordVersion, App} from "../../types";
 import {generateToken} from "../../crypto";
 
 const ddb = new DynamoDB.DocumentClient();
 const apigw = new ApiGateway();
 
-const {API_KEY_TABLE, API_ID, STAGE} = process.env;
+const {APPLICATIONS_TABLE, API_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {owner} = event.requestContext.authorizer;
+    const {pathParameters, requestContext} = event;
+    const {owner} = requestContext.authorizer;
+    const {appId} = pathParameters;
 
-    const accessToken = await generateToken();
+    const app: App = (await ddb.get({
+        TableName: APPLICATIONS_TABLE,
+        Key: {
+            owner,
+            sk: `app#${appId}`,
+        }
+    }).promise()).Item as App;
+    if (!app) {
+        console.log('app_not_found', owner, appId);
+        return {
+            statusCode: 403,
+            body: 'app_not_found',
+        };
+    }
+
+    const dataKey = await generateToken();
     const id = uuid();
 
-    const usagePlanId = (await apigw.createUsagePlan({
-        name: id,
-        description: `AccessToken,Owner:${owner}`,
-        throttle: {
-            rateLimit: 10,
-            burstLimit: 50,
-        },
-        quota: {
-            limit: 1_000,
-            period: "DAY",
-        }
-    }).promise()).id;
     const apigwApiKey = await apigw.createApiKey({
         enabled: true,
         name: id,
     }).promise();
-
-    await apigw.updateUsagePlan({
-        usagePlanId,
-        patchOperations: [{
-            op: 'add',
-            path: '/apiStages',
-            value: `${API_ID}:${STAGE}`
-        }]
-    }).promise();
     try {
         await apigw.createUsagePlanKey({
-            usagePlanId: usagePlanId,
+            usagePlanId: app.usagePlanId,
             keyType: "API_KEY",
             keyId: apigwApiKey.id,
         }).promise();
@@ -57,15 +53,16 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const apiKeyRecord: ApiKeyRecord = {
         id,
-        pk: owner,
-        apiKey: accessToken,
+        pk: appId,
+        appId,
+        apiKey: dataKey,
         owner,
         apigwApiKeyId: apigwApiKey.id,
         apigwApiKeyValue: apigwApiKey.value,
         active: true,
         created: new Date().toISOString(),
-        usagePlanId,
-        type: 'ACCESS_TOKEN',
+        type: 'API_KEY',
+        usagePlanId: app.usagePlanId,
         version: ApiKeyRecordVersion.A
     };
 
@@ -74,11 +71,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         Item: apiKeyRecord
     }).promise();
 
-    metrics.setNamespace("DEV/ServerlessScheduler/CreateAccessToken");
+    metrics.setNamespace("DEV/ServerlessScheduler/CreateDataKey");
     metrics.setProperty("Owner", owner);
+    metrics.setProperty("App", appId);
 
     return {
         statusCode: 200,
-        body: JSON.stringify({id, secret: accessToken}),
+        body: JSON.stringify({id, secret: dataKey}),
     }
 });

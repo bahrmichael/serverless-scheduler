@@ -2,33 +2,30 @@ import 'source-map-support/register';
 import * as DynamoDB from 'aws-sdk/clients/dynamodb';
 import {APIGatewayProxyEventBase} from "aws-lambda";
 import {metricScope} from "aws-embedded-metrics";
+import {ControlKeyRecord} from "../../types";
 
 const ddb = new DynamoDB.DocumentClient();
 
-const {API_KEY_TABLE} = process.env;
+const {CONTROL_KEY_TABLE} = process.env;
 
 export const main = metricScope(metrics => async (event: APIGatewayProxyEventBase<any>) => {
 
-    const {pathParameters, requestContext} = event;
+    const {requestContext} = event;
     const {owner} = requestContext.authorizer;
-    const {appId} = pathParameters;
 
-    const items: any[] = (await ddb.query({
-        TableName: API_KEY_TABLE,
-        KeyConditionExpression: 'pk = :a',
-        FilterExpression: '#owner = :o and #type = :t',
+    const items: ControlKeyRecord[] = (await ddb.query({
+        TableName: CONTROL_KEY_TABLE,
+        IndexName: 'ownerIndex',
+        KeyConditionExpression: '#owner = :o',
         ExpressionAttributeNames: {
             '#owner': 'owner',
-            '#type': 'type',
         },
         ExpressionAttributeValues: {
-            ':a': appId,
             ':o': owner,
-            ':t': 'API_KEY',
         },
-    }).promise()).Items ?? [];
+    }).promise()).Items as ControlKeyRecord[] ?? [];
 
-    const mappedApiKeys = items.map(({id, created, active}) => {
+    const mappedControlKeys = items.map(({id, created, active}) => {
         return {
             id,
             created,
@@ -36,13 +33,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     });
 
-    metrics.setNamespace("DEV/ServerlessScheduler/ListApiKeys");
+    metrics.setNamespace("DEV/ServerlessScheduler/ListControlKeys");
     metrics.setProperty("Owner", owner);
-    metrics.setProperty("App", appId);
-    metrics.setProperty("Count", mappedApiKeys.length);
+    metrics.setProperty("Count", mappedControlKeys.length);
 
     return {
         statusCode: 200,
-        body: JSON.stringify(mappedApiKeys),
+        body: JSON.stringify(mappedControlKeys),
     }
 });

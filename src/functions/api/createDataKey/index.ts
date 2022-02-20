@@ -3,7 +3,7 @@ export default {
   events: [{
     http: {
       method: 'POST',
-      path: '/applications/{appId}/api-keys',
+      path: '/applications/{appId}/data-keys',
       authorizer: {
         name: 'authorizer',
         identitySource: 'method.request.header.Authorization',
@@ -34,6 +34,6 @@ export default {
     }
   ],
   tags: {
-    function: 'createApiKey',
+    function: 'createDataKey',
   },
 }
