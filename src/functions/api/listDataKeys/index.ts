@@ -3,17 +3,6 @@ export default {
   events: [{
     http: {
       method: 'GET',
-      path: '/applications/{appId}/api-keys',
-      authorizer: {
-        name: 'authorizer',
-        identitySource: 'method.request.header.Authorization',
-        type: 'request'
-      },
-      private: true,
-    }
-  }, {
-    http: {
-      method: 'GET',
       path: '/applications/{appId}/data-keys',
       authorizer: {
         name: 'authorizer',

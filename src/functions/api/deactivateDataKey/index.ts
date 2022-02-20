@@ -3,17 +3,6 @@ export default {
   events: [{
     http: {
       method: 'PUT',
-      path: '/applications/{appId}/api-keys/{dataKeyId}/deactivate',
-      authorizer: {
-        name: 'authorizer',
-        identitySource: 'method.request.header.Authorization',
-        type: 'request'
-      },
-      private: true,
-    }
-  }, {
-    http: {
-      method: 'PUT',
       path: '/applications/{appId}/data-keys/{dataKeyId}/deactivate',
       authorizer: {
         name: 'authorizer',
