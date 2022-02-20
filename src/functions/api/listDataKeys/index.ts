@@ -11,6 +11,17 @@ export default {
       },
       private: true,
     }
+  }, {
+    http: {
+      method: 'GET',
+      path: '/applications/{appId}/data-keys',
+      authorizer: {
+        name: 'authorizer',
+        identitySource: 'method.request.header.Authorization',
+        type: 'request'
+      },
+      private: true,
+    }
   }],
   environment: {
     API_KEY_TABLE: {Ref: 'ApiKeyTable'},
@@ -23,6 +34,6 @@ export default {
     },
   ],
   tags: {
-    function: 'listApiKeys',
+    function: 'listDataKeys',
   },
 }

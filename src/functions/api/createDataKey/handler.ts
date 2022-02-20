@@ -33,7 +33,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         };
     }
 
-    const apiKey = await generateToken();
+    const dataKey = await generateToken();
     const id = uuid();
 
     const apigwApiKey = await apigw.createApiKey({
@@ -55,7 +55,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         id,
         pk: appId,
         appId,
-        apiKey,
+        apiKey: dataKey,
         owner,
         apigwApiKeyId: apigwApiKey.id,
         apigwApiKeyValue: apigwApiKey.value,
@@ -71,12 +71,12 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         Item: apiKeyRecord
     }).promise();
 
-    metrics.setNamespace("DEV/ServerlessScheduler/GenerateApiKey");
+    metrics.setNamespace("DEV/ServerlessScheduler/CreateDataKey");
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
 
     return {
         statusCode: 200,
-        body: JSON.stringify({id, secret: apiKey}),
+        body: JSON.stringify({id, secret: dataKey}),
     }
 });

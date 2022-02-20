@@ -28,7 +28,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         },
     }).promise()).Items ?? [];
 
-    const mappedApiKeys = items.map(({id, created, active}) => {
+    const mappedDataKeys = items.map(({id, created, active}) => {
         return {
             id,
             created,
@@ -36,13 +36,13 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         }
     });
 
-    metrics.setNamespace("DEV/ServerlessScheduler/ListApiKeys");
+    metrics.setNamespace("DEV/ServerlessScheduler/ListDataKeys");
     metrics.setProperty("Owner", owner);
     metrics.setProperty("App", appId);
-    metrics.setProperty("Count", mappedApiKeys.length);
+    metrics.setProperty("Count", mappedDataKeys.length);
 
     return {
         statusCode: 200,
-        body: JSON.stringify(mappedApiKeys),
+        body: JSON.stringify(mappedDataKeys),
     }
 });
