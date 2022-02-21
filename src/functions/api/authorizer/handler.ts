@@ -51,6 +51,10 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         console.log('Auth:Basic');
 
         const allowedRoutes = [{
+            // for backwards compatibility
+            method: 'post',
+            path: '/message'
+        }, {
             method: 'post',
             path: '/messages'
         }, {
