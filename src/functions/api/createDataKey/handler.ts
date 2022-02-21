@@ -69,6 +69,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         version: ApiKeyRecordVersion.A
     };
 
+    console.log('Store record in ddb')
+
     await ddb.put({
         TableName: API_KEY_TABLE,
         Item: apiKeyRecord
