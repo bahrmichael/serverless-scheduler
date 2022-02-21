@@ -29,10 +29,11 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         throw Error(`Unhandled authorizer event type: ${event.type}`);
     }
 
-    const {path, pathParameters, methodArn, headers} = event;
+    const {path, pathParameters, methodArn, headers, httpMethod} = event;
 
     metrics.setProperty("Path", path);
     metrics.setProperty("Resource", pathParameters);
+    metrics.setProperty("Method", httpMethod);
     console.log({authorizationToken});
 
     if (!authorizationToken) {
