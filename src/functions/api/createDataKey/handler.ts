@@ -36,11 +36,14 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
     const dataKey = await generateToken();
     const id = uuid();
 
+    console.log('Create api key')
+
     const apigwApiKey = await apigw.createApiKey({
         enabled: true,
         name: id,
     }).promise();
     try {
+        console.log('Attach api key to usage plan')
         await apigw.createUsagePlanKey({
             usagePlanId: app.usagePlanId,
             keyType: "API_KEY",

@@ -43,6 +43,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
 
     const id = uuid();
 
+    console.log('Creating usage plan');
+
     const usagePlanId = (await apigw.createUsagePlan({
         name: id,
         description: `App:${id},Owner:${owner}`,
@@ -55,6 +57,8 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
             period: "DAY",
         }
     }).promise()).id;
+
+    console.log('Attaching usage plan');
     await apigw.updateUsagePlan({
         usagePlanId,
         patchOperations: [{
@@ -78,6 +82,7 @@ export const main = metricScope(metrics => async (event: APIGatewayProxyEventBas
         sendBackFormat,
     };
 
+    console.log('Storing to dynamodb');
     await ddb.put({
         TableName: APPLICATIONS_TABLE,
         Item: {
