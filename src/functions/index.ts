@@ -20,3 +20,5 @@ export { default as listControlKeys } from './api/listControlKeys';
 export { default as deactivateControlKey } from './api/deactivateControlKey';
 export { default as listMessageLogs } from './api/listMessageLogs';
 export { default as getMessage } from './api/getMessage';
+export { default as registerMarketplace } from './api/registerMarketplace';
+export { default as marketplaceSubscription } from './api/marketplaceSubscription';

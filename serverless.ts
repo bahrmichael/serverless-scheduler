@@ -16,7 +16,7 @@ import {
     redriveMessage,
     releaseMessage,
     schedulePull,
-    updateApp,
+    updateApp, registerMarketplace, marketplaceSubscription,
 } from './src/functions';
 
 const serverlessConfiguration: AWS = {
@@ -74,6 +74,8 @@ const serverlessConfiguration: AWS = {
         getMessage,
         abortMessage,
         redriveMessage,
+        registerMarketplace,
+        marketplaceSubscription,
     },
     resources: {
         extensions: {
