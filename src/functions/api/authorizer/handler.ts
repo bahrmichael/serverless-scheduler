@@ -106,7 +106,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             metrics.setProperty("AccessDeniedReason", "Failed to decode base64 header.");
             metrics.setProperty("Base64", decoded);
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn, undefined, { authorizer: { myErrorMessage: INVALID_AUTH }});
+            return generatePolicy('user', 'Deny', methodArn, undefined, { myErrorMessage: INVALID_AUTH });
         }
         const id = parts[0];
         const publicApiKey = parts[1];
