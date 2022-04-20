@@ -5,6 +5,15 @@ import {ApiKeyRecord, ControlKeyRecord} from "../../types";
 import {APIGatewayAuthorizerEvent} from "aws-lambda/trigger/api-gateway-authorizer";
 import {decode} from 'next-auth/jwt';
 import {match} from 'node-match-path';
+import {
+    APP_NOT_FOUND,
+    AUTH_HEADER_MISSING,
+    CONTROL_KEY_INACTIVE,
+    DATA_KEY_INACTIVE,
+    INVALID_AUTH,
+    MESSAGE_NOT_FOUND,
+    ROUTE_DOESNT_ALLOW_AUTH_METHOD
+} from "./error-messages";
 
 const ddb = new DynamoDB.DocumentClient();
 
@@ -39,7 +48,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
     if (!authorizationToken) {
         metrics.putMetric("AccessDenied", 1, "Count");
         metrics.setProperty("AccessDeniedReason", "Missing authorizationToken");
-        return generatePolicy('user', 'Deny', methodArn);
+        return generatePolicy('user', 'Deny', methodArn, null, { messageString: AUTH_HEADER_MISSING });
     }
 
     let appId;
@@ -86,13 +95,19 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             // if no match was found, we deny the request
             metrics.putMetric("AccessDenied", 1, "Count");
             metrics.setProperty("AccessDeniedReason", "Route not allowed for Basic auth");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: ROUTE_DOESNT_ALLOW_AUTH_METHOD });
         }
 
         const data = authorizationToken.split(' ')[1];
         const buff = Buffer.from(data, 'base64');
         const decoded = buff.toString('ascii');
         const parts = decoded.split(':');
+        if (parts.length !== 2) {
+            metrics.setProperty("AccessDeniedReason", "Failed to decode base64 header.");
+            metrics.setProperty("Base64", decoded);
+            metrics.putMetric("AccessDenied", 1, "Count");
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: INVALID_AUTH });
+        }
         const id = parts[0];
         const publicApiKey = parts[1];
 
@@ -104,7 +119,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         if (!apiKeyRecord?.active) {
             metrics.setProperty("AccessDeniedReason", "ApiKeyRecord is not active");
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: DATA_KEY_INACTIVE });
         }
 
         owner = apiKeyRecord.owner;
@@ -122,7 +137,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             metrics.setProperty("AppId", appId);
             metrics.setProperty("Owner", owner);
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: APP_NOT_FOUND });
         }
 
         if (pathParameters.messageId) {
@@ -135,7 +150,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
                 metrics.setProperty("AppId", appId);
                 metrics.setProperty("MessageId", pathParameters.messageId);
                 metrics.putMetric("AccessDenied", 1, "Count");
-                return generatePolicy('user', 'Deny', methodArn);
+                return generatePolicy('user', 'Deny', methodArn, null, { messageString: MESSAGE_NOT_FOUND });
             }
             messageId = messageRes.Item.messageId;
         }
@@ -189,7 +204,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             // if no match was found, we deny the request
             metrics.setProperty("AccessDeniedReason", "Route not allowed for Token auth");
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: ROUTE_DOESNT_ALLOW_AUTH_METHOD });
         }
 
         const publicControlKey = authorizationToken.split(' ')[1];
@@ -202,7 +217,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         if (!controlKeyRecord?.active) {
             metrics.setProperty("AccessDeniedReason", "ControlKeyRecord is not active");
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: CONTROL_KEY_INACTIVE });
         }
 
         owner = controlKeyRecord.owner;
@@ -218,7 +233,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
                 metrics.setProperty("AppId", pathParameters.appId);
                 metrics.setProperty("Owner", owner);
                 metrics.putMetric("AccessDenied", 1, "Count");
-                return generatePolicy('user', 'Deny', methodArn);
+                return generatePolicy('user', 'Deny', methodArn, null, { messageString: APP_NOT_FOUND });
             }
             appId = appRes.Item.appId;
         }
@@ -288,7 +303,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
             // if no match was found, we deny the request
             metrics.setProperty("AccessDeniedReason", "Route not allowed for Cookie auth");
             metrics.putMetric("AccessDenied", 1, "Count");
-            return generatePolicy('user', 'Deny', methodArn);
+            return generatePolicy('user', 'Deny', methodArn, null, { messageString: ROUTE_DOESNT_ALLOW_AUTH_METHOD });
         }
 
         const cookies = new Map<string, string>();
@@ -313,7 +328,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
                 metrics.setProperty("AppId", appId);
                 metrics.setProperty("Owner", owner);
                 metrics.putMetric("AccessDenied", 1, "Count");
-                return generatePolicy('user', 'Deny', methodArn);
+                return generatePolicy('user', 'Deny', methodArn, null, { messageString: APP_NOT_FOUND });
             }
 
             if (messageId) {
@@ -326,7 +341,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
                     metrics.setProperty("AppId", appId);
                     metrics.setProperty("MessageId", messageId);
                     metrics.putMetric("AccessDenied", 1, "Count");
-                    return generatePolicy('user', 'Deny', methodArn);
+                    return generatePolicy('user', 'Deny', methodArn, null, { messageString: MESSAGE_NOT_FOUND });
                 }
             }
         }
@@ -336,7 +351,7 @@ export const main = metricScope(metrics => async (event: APIGatewayAuthorizerEve
         console.log('Unhandled auth path', headers);
         metrics.setProperty("AccessDeniedReason", "Unhandled Auth");
         metrics.putMetric("AccessDenied", 1, "Count");
-        return generatePolicy('user', 'Deny', methodArn);
+        return generatePolicy('user', 'Deny', methodArn, null, { messageString: INVALID_AUTH });
     }
 
     metrics.setProperty("Owner", owner);
