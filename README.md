@@ -5,7 +5,7 @@ and the articles that it links to.
 
 This project is the result of me writing 4 previous blog posts, at least 5 other posts on ad-hoc scheduling from the serverless
 community, and more than 5 years of waiting on AWS to offer a solution for ad-hoc scheduling. They finally released such a solution
-in November 2022 with the EventBridge Scheduler.
+in November 2022 with the EventBridge Scheduler. See the section "Further Reading" at the end of this Readme.
 
 This is the core of the scheduler project. You can find the frontend at https://github.com/bahrmichael/serverless-scheduler-app
 and additional documentation at https://github.com/bahrmichael/point-in-time-scheduler.
@@ -20,6 +20,20 @@ works, but it needs some work to clean up the code and the various authorization
 This project consists of the Infrastructure as Code in the `serverless.ts` file, various CRUDL APIs and the authorizer in the
 `/functions/api` folder, the heart of the project in `/functions/engine` and some rudimentary metering in `/functions/metering`.
 The project uses API Gateway's usage plans feature to eventually support metering and billing through AWS marketplace.
+
+### How does a message flow through the system?
+
+Incoming messages are processed by `/functions/ingestMessage`. If all validations are successful, the message is sent directly into
+an SQS queue (if it has less than 10 minutes remaining until release), or into a DynamoDB table for long term storage. SQS supports
+message delays of up to 15 minutes.
+
+The engine then picks up messages from the DynamoDB table. This happens in multiple steps to achieve high scalability.
+First, `/functions/engine/schedulePull` loads all registered applications and triggers a run of `/functions/pullForOwner` for each.
+This function name is not up-to-date and should rather be called `pullForApplication`. It takes an application id, and uses it
+to query for messages that can be released within 5 minutes. The messages are then put into the SQS queue from above.
+
+Once the message delay in SQS has expired, the message becomes visible and the Lambda function `/functions/releaseMessage` sends
+them to their destination.
 
 ## API Specs
 
@@ -81,3 +95,25 @@ CORE_API_KEY=my-core-api-key NEXTAUTH_SECRET=secret AWS_PROFILE=<YOUR-PROFILE> n
 I decided against tests during the prototyping phase. After that I went straight ahead to [canary-like e2e tests](https://github.com/bahrmichael/point-in-time-scheduler-e2e-api), 
 because some code paths are only accessed if there are delays of more than 15 minutes. That felt like too much for
 a test suite which is part of the deployment process.
+
+## Further Reading on Serverless Scheduling
+
+- [Serverless Scheduler - A research project](https://bahr.dev/2019/10/11/serverless-scheduler/)
+- [Point In Time Scheduler - This project](https://bahr.dev/2022/01/06/point-in-time-scheduler/)
+- https://medium.com/@zaccharles/there-is-more-than-one-way-to-schedule-a-task-398b4cdc2a75
+
+### Scheduling with DynamoDB
+
+- https://bahr.dev/2019/05/29/ddb-scheduling-cost/
+- https://bahr.dev/2019/05/29/ddb-ttl-analysis/
+- https://bahr.dev/2019/05/29/scheduling-ddb/
+- https://theburningmonk.com/2019/03/dynamodb-ttl-as-an-ad-hoc-scheduling-mechanism/
+
+### Scheduling with Step Functions
+
+- https://theburningmonk.com/2019/06/step-functions-as-an-ad-hoc-scheduling-mechanism/
+
+### Scheduling with CloudWatch
+
+- https://theburningmonk.com/2019/05/using-cloudwatch-and-lambda-to-implement-ad-hoc-scheduling/
+
