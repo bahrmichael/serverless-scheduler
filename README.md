@@ -5,7 +5,8 @@ and the articles that it links to.
 
 This project is the result of me writing 4 previous blog posts, at least 5 other posts on ad-hoc scheduling from the serverless
 community, and more than 5 years of waiting on AWS to offer a solution for ad-hoc scheduling. They finally released such a solution
-in November 2022 with the EventBridge Scheduler.
+in November 2022 with the EventBridge Scheduler. There are additional repositories from previous experiments at https://github.com/bahrmichael/aws-scheduler and https://github.com/bahrmichael/aws-scheduler-testing,
+
 
 This is the core of the scheduler project. You can find the frontend at https://github.com/bahrmichael/serverless-scheduler-app
 and additional documentation at https://github.com/bahrmichael/point-in-time-scheduler.
