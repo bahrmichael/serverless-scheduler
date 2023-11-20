@@ -47,9 +47,6 @@ const serverlessConfiguration: AWS = {
         tags: {
             project: 'serverless-scheduler-core',
         },
-        logs: {
-            restApi: true,
-        }
     },
     functions: {
         schedulePull,
@@ -390,7 +387,6 @@ const serverlessConfiguration: AWS = {
                     EmailConfiguration: {
                         EmailSendingAccount: 'COGNITO_DEFAULT'
                     }
-
                 }
             },
             UserPoolClient: {
@@ -399,7 +395,7 @@ const serverlessConfiguration: AWS = {
                     GenerateSecret: false,
                     UserPoolId: {Ref: 'UserPool'},
                     SupportedIdentityProviders: ['COGNITO'],
-                    CallbackURLs: ['https://literate-octo-disco.vercel.app/api/auth/callback/cognito'],
+                    CallbackURLs: ['https://serverless-scheduler-app-one.vercel.app/api/auth/callback/cognito'],
                     AllowedOAuthFlowsUserPoolClient: true,
                     AllowedOAuthFlows: ['code'],
                     AllowedOAuthScopes: ['email', 'openid', 'profile']
