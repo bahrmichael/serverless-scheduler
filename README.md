@@ -48,9 +48,7 @@ You can still check it out at https://www.npmjs.com/package/point-in-time-schedu
 
 ## Demo Instance
 
-Instead of deploying this yourself, you can use https://serverless-scheduler-app-one.vercel.app (frontend) and https://k5v6qjp3ha.execute-api.us-east-1.amazonaws.com/dev (backend API).
-
-I removed social logins to get the demo instance working, you can just click through the login without providing credentials.
+There is no demo instance at this time.
 
 ## Deployment
 
